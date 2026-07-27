@@ -19,7 +19,7 @@ function PagLogin() {
         <form onSubmit={Login}>
           <div className="mt-10 p-0 block text-center">
             <label className="">tipo colaborador</label>
-            <div>
+            <div className="flex">
               <button
                 type="button"
                 onClick={() => setCargo("adm")}
