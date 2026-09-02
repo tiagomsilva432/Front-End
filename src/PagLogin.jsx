@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function pagLogin() {
+function PagLogin() {
   const [usuario, setUsuario] = useState("");
   const [senha, setSenha] = useState("");
   const [isDark, setIsDark] = useState(true);
@@ -106,4 +106,4 @@ function pagLogin() {
   );
 }
 
-export default pagLogin;
+export default PagLogin;
