@@ -2,33 +2,30 @@ import { useState } from "react";
 
 export default function AdmHome() {
   const [isDark, setIsDark] = useState(true);
-  /*
+
   const infos = [
     {
       titulo: "Total Funcionários",
       valor: "48",
       det: "+3 este mês",
-      cor: "from-blue-500 to-indigo-600",
     },
     {
       titulo: "Projetos Ativos",
       valor: "12",
       det: "2 em prazo crítico",
-      cor: "from-emerald-500 to-teal-600",
     },
     {
       titulo: "Banco de Horas (Saldo)",
       valor: "+142h",
       det: "Acumulado equipa",
-      cor: "from-amber-500 to-orange-600",
     },
     {
       titulo: "Folha Salarial (Mês)",
       valor: "€ 68.500",
       det: "Processamento dia 28",
-      cor: "from-purple-500 to-pink-600",
     },
   ];
+  /*
   const projetos = [
     { id: 1, nome: "Redesign ERP Interno", progresso: 75, prazo: "15/Nov", status: "Em Progresso" },
     { id: 2, nome: "Migração Banco de Dados", progresso: 40, prazo: "30/Nov", status: "Atrasado" },
@@ -53,7 +50,7 @@ export default function AdmHome() {
     >
       <div className="max-27xl mx-auto flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Painel</h1>
+          <h1 className="text-2xl font-bold">Painel Adm</h1>
           <p
             className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
@@ -73,7 +70,24 @@ export default function AdmHome() {
         </button>
       </div>
       <div>
-        
+        {infos.map((infos, chave) => (
+          <div
+            key={chave}
+            className={`p-5 rounded-2xl border backdrop-blur-md relative overflow-hidden transition-all ${
+              isDark
+                ? "bg-white/5 border-white/10"
+                : "bg-white border-slate-200 shadow-sm"
+            }`}
+          >
+            <p
+              className={`text-xs font-medium uppercase tracking-wider ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            >
+              {infos.titulo}
+            </p>
+            <h2 className="text-2xl font-bold mt-2 mb-1">{infos.valor}</h2>
+            <p className="text-xs text-emerald-400">{infos.det}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
