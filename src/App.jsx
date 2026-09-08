@@ -1,7 +1,5 @@
-import AdmHome from "./pages/PagAdm";
+import Approutes from "./routes/approutes";
 
-function App() {
-  return <AdmHome />;
+export default function app() {
+  return <Approutes />;
 }
-
-export default App;
