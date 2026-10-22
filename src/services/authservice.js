@@ -1,16 +1,11 @@
-const API_URL = "http://localhost:3000";
+import { apiRequest } from "./api";
 
 export const authService = {
-  async login(email, password) {
-    const resposta = await fetch(`${API_URL}/auth/login`, {
+  async login(email, password, companyId) {
+    const resultado = await apiRequest("/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: { email, password, ...(companyId ? { companyId } : {}) },
     });
-
-    const resultado = await resposta.json();
-    if (!resposta.ok)
-      throw new Error(resultado.message || "Erro ao efetuar login.");
 
     const { token, user } = resultado.data;
     localStorage.setItem("token", token);
@@ -18,35 +13,26 @@ export const authService = {
     return user;
   },
 
-  async registrar({ email, role, companyId }) {
-    const token = localStorage.getItem("token");
+  async registrar({ email, role, companyId, profile }) {
+    const token = this.obterToken();
 
     const payload = {
-      companyId: String(companyId), // Força a ser string (UUID)
+      companyId: String(companyId),
       email: String(email).trim(),
-      role: String(role), // Envia a role exata selecionada
+      role: String(role),
+      ...(profile ? { profile } : {}),
     };
-    console.log(
-      "🚀 PAYLOAD ENVIADO PARA O BACK-END:",
-      JSON.stringify(payload, null, 2),
-    );
-    const resposta = await fetch(`${API_URL}/auth/account/create`, {
+    return apiRequest("/auth/account/create", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
+      token,
+      body: payload,
     });
-
-    const dados = await resposta.json();
-
-    if (!resposta.ok) {
-      throw new Error(dados.message || "Erro ao criar conta e enviar convite.");
-    }
-
-    return dados;
   },
+
+  obterToken() {
+    return localStorage.getItem("token") || "";
+  },
+
   obterSessao() {
     const sessao = localStorage.getItem("usuario_sessao");
     return sessao ? JSON.parse(sessao) : null;
@@ -58,17 +44,9 @@ export const authService = {
   },
 
   async ativarConta({ token, password }) {
-    const resposta = await fetch(`${API_URL}/auth/account/activate`, {
+    return apiRequest("/auth/account/activate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ signupToken: token, password: password }),
+      body: { signupToken: token, password },
     });
-
-    const resultado = await resposta.json();
-    if (!resposta.ok) {
-      throw new Error(resultado.message || "Erro ao ativar a conta.");
-    }
-
-    return resultado;
   },
 };
