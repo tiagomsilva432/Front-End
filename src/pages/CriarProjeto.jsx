@@ -99,7 +99,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
     <div className={`border p-6 rounded-3xl shadow-sm space-y-5 ${tema.card}`}>
       <div>
         <h2 className="text-lg font-bold">Novo Projeto</h2>
-        <p className={`text-xs mt-1 ${tema.text}`}>
+        <p className={`text-xs mt-1 ${tema.texto}`}>
           Os campos opcionais podem ser preenchidos mais tarde.
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
-            className={`block text-xs font-semibold uppercase mb-1 ${tema.text}`}
+            className={`block text-xs font-semibold uppercase mb-1 ${tema.texto}`}
           >
             Nome do projeto *
           </label>
@@ -137,7 +137,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
 
         <div>
           <label
-            className={`block text-xs font-semibold uppercase mb-1 ${tema.text}`}
+            className={`block text-xs font-semibold uppercase mb-1 ${tema.texto}`}
           >
             Cliente
           </label>
@@ -153,7 +153,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
 
         <div>
           <label
-            className={`block text-xs font-semibold uppercase mb-1 ${tema.text}`}
+            className={`block text-xs font-semibold uppercase mb-1 ${tema.texto}`}
           >
             Estado
           </label>
@@ -173,7 +173,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label
-              className={`block text-xs font-semibold uppercase mb-1 ${tema.text}`}
+              className={`block text-xs font-semibold uppercase mb-1 ${tema.texto}`}
             >
               Data de início
             </label>
@@ -186,7 +186,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
           </div>
           <div>
             <label
-              className={`block text-xs font-semibold uppercase mb-1 ${tema.text}`}
+              className={`block text-xs font-semibold uppercase mb-1 ${tema.texto}`}
             >
               Data de fim
             </label>
@@ -202,7 +202,7 @@ export default function CriarProjeto({ companyId, onSucesso, isDark = true }) {
 
         <div>
           <label
-            className={`block text-xs font-semibold uppercase mb-1 ${tema.text}`}
+            className={`block text-xs font-semibold uppercase mb-1 ${tema.texto}`}
           >
             Orçamento (€)
           </label>

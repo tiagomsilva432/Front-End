@@ -1,5 +1,10 @@
 import AppRoutes from "./routes/approutes";
+import ThemeProvider from "./theme/ThemeProvider";
 
-export default function app() {
-  return <AppRoutes />;
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppRoutes />
+    </ThemeProvider>
+  );
 }

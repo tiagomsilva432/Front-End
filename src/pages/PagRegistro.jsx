@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { authService } from "../services/authservice";
 
 export default function PagRegistro({
   companyId: propCompanyId,
@@ -21,6 +22,8 @@ export default function PagRegistro({
   const companyId = propCompanyId || companyIdFromToken;
 
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [role, setRole] = useState("employee");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
@@ -38,32 +41,29 @@ export default function PagRegistro({
       return;
     }
 
+    if (!firstName.trim() || !lastName.trim()) {
+      setErro("Preenche o primeiro e o último nome do colaborador.");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       companyId,
-      email,
+      email: email.trim(),
       role,
+      profile: {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      },
     };
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/auth/account/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(payload),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao criar a conta.");
-      }
+      await authService.registrar(payload);
 
       setSucesso("Conta criada com sucesso!");
       setEmail("");
+      setFirstName("");
+      setLastName("");
       setRole("employee");
 
       if (onRegistroSucesso) {
@@ -108,7 +108,7 @@ export default function PagRegistro({
       <div>
         <h2 className="text-xl font-bold">Criar Nova Conta na Empresa</h2>
         <p className={`text-xs mt-1 ${theme.textMuted}`}>
-          Insere o e-mail e define a função para o novo colaborador.
+          Insere o nome e o e-mail do novo colaborador para enviar o convite.
         </p>
       </div>
 
@@ -129,13 +129,50 @@ export default function PagRegistro({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="novo-empregado-primeiro-nome" className={`block text-xs mb-1.5 ${theme.label}`}>
+              Primeiro nome
+            </label>
+            <input
+              id="novo-empregado-primeiro-nome"
+              type="text"
+              required
+              maxLength={100}
+              autoComplete="given-name"
+              placeholder="Ex.: Carla"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className={`w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all ${theme.inputBg}`}
+            />
+          </div>
+          <div>
+            <label htmlFor="novo-empregado-ultimo-nome" className={`block text-xs mb-1.5 ${theme.label}`}>
+              Último nome
+            </label>
+            <input
+              id="novo-empregado-ultimo-nome"
+              type="text"
+              required
+              maxLength={100}
+              autoComplete="family-name"
+              placeholder="Ex.: Mendes"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className={`w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all ${theme.inputBg}`}
+            />
+          </div>
+        </div>
+
         <div>
-          <label className={`block text-xs mb-1.5 ${theme.label}`}>
+          <label htmlFor="novo-empregado-email" className={`block text-xs mb-1.5 ${theme.label}`}>
             E-mail
           </label>
           <input
+            id="novo-empregado-email"
             type="email"
             required
+            autoComplete="email"
             placeholder="user@exemplo.pt"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

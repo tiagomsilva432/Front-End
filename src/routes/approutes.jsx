@@ -2,7 +2,7 @@ import { useState } from "react";
 import AdmHome from "../pages/PagAdm";
 import AdmCompHome from "../pages/PagCompAdm";
 import FuncHome from "../pages/PagTrab";
-import { authService } from "../services/authService";
+import { authService } from "../services/authservice";
 import PagLogin from "../pages/PagLogin";
 import PagAtivacao from "../pages/PagAtivacao";
 
@@ -18,12 +18,15 @@ export default function AppRoutes() {
   });
 
   // 2. Interceção prioritária da rota de ativação via e-mail
-  if (window.location.pathname === "/ativar-conta") {
+  if (
+    window.location.pathname === "/ativar-conta" ||
+    window.location.pathname === "/auth/account/activate"
+  ) {
     return <PagAtivacao />;
   }
 
+  // O authService.login já guarda o token e a sessão no localStorage.
   const handleLogin = (dadosUsuario) => {
-    localStorage.setItem("usuario_sessao", JSON.stringify(dadosUsuario));
     setUsuario(dadosUsuario);
   };
 
