@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { listarUsers } from "../services/userservice";
 import { listarProjetos } from "../services/projetoservice";
+import { obterEmpresa } from "../services/companyservice";
 import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
 import Alerta from "../components/ui/Alerta";
@@ -13,12 +14,25 @@ import FormNovoColaborador from "../components/empresa/FormNovoColaborador";
 import FormNovoProjeto from "../components/empresa/FormNovoProjeto";
 import ModalEditarColaborador from "../components/empresa/ModalEditarColaborador";
 import ModalAlocacoes from "../components/empresa/ModalAlocacoes";
+import ModalEquipaProjeto from "../components/empresa/ModalEquipaProjeto";
+import ModalEditarProjeto from "../components/empresa/ModalEditarProjeto";
+import ModalEditarEmpresa from "../components/admin/ModalEditarEmpresa";
+import ListaDados from "../components/ui/ListaDados";
+import ModalCompetencias from "../components/empresa/ModalCompetencias";
+import ModalSalario from "../components/empresa/ModalSalario";
+import CatalogoCompetencias from "../components/competencias/CatalogoCompetencias";
+import GestaoAvaliacoes from "../components/avaliacoes/GestaoAvaliacoes";
+import CaixaAvaliacoes from "../components/avaliacoes/CaixaAvaliacoes";
+import ResultadosPorPessoa from "../components/avaliacoes/ResultadosPorPessoa";
 import { useTheme } from "../theme/tema";
 
 const MENU = [
   { id: "overview", label: "Visão geral", icone: "painel" },
   { id: "pessoas", label: "Colaboradores", icone: "pessoas" },
   { id: "projetos", label: "Projetos", icone: "pasta" },
+  { id: "competencias", label: "Competências", icone: "estrela" },
+  { id: "avaliacoes", label: "Avaliações", icone: "avaliacao" },
+  { id: "empresa", label: "Empresa", icone: "empresa" },
 ];
 
 // Sub-ecrãs que pertencem a uma entrada do menu.
@@ -40,13 +54,21 @@ export default function AdmCompHome({ Usuario, onLogout }) {
   const token = authService.obterToken();
   const companyId = Usuario?.companyId || obterCompanyIdDoToken(token);
 
-  const [colaboradores, setColaboradores] = useState([]);
+  // Todas as contas da empresa (incluindo admins): servem para escolher o gestor e mostrar nomes.
+  const [pessoas, setPessoas] = useState([]);
+  const [empresa, setEmpresa] = useState(null);
+  const [editarEmpresaAberto, setEditarEmpresaAberto] = useState(false);
+  const [projetoEmEdicao, setProjetoEmEdicao] = useState(null);
+  const [colaboradorCompetencias, setColaboradorCompetencias] = useState(null);
+  const [colaboradorSalario, setColaboradorSalario] = useState(null);
+  const [vistaAvaliacoes, setVistaAvaliacoes] = useState("ciclos");
   const [projetos, setProjetos] = useState([]);
   const [carregando, setCarregando] = useState(() => Boolean(companyId));
   const [erroBackend, setErroBackend] = useState(null);
   const [recarga, setRecarga] = useState(0);
   const [colaboradorEmEdicao, setColaboradorEmEdicao] = useState(null);
   const [colaboradorAlocacoes, setColaboradorAlocacoes] = useState(null);
+  const [projetoEquipa, setProjetoEquipa] = useState(null);
 
   // Carrega colaboradores e projetos (e volta a carregar quando `recarga` muda).
   useEffect(() => {
@@ -54,11 +76,13 @@ export default function AdmCompHome({ Usuario, onLogout }) {
     let ativo = true;
 
     Promise.allSettled([
-      listarUsers({ companyId, role: "employee" }, token),
+      listarUsers({ companyId }, token),
       listarProjetos(companyId, "", token),
-    ]).then(([resColabs, resProjs]) => {
+      obterEmpresa(companyId, token),
+    ]).then(([resColabs, resProjs, resEmpresa]) => {
       if (!ativo) return;
-      if (resColabs.status === "fulfilled" && Array.isArray(resColabs.value)) setColaboradores(resColabs.value);
+      if (resColabs.status === "fulfilled" && Array.isArray(resColabs.value)) setPessoas(resColabs.value);
+      if (resEmpresa.status === "fulfilled") setEmpresa(resEmpresa.value);
       if (resProjs.status === "fulfilled" && Array.isArray(resProjs.value)) setProjetos(resProjs.value);
 
       if (resColabs.status === "rejected") setErroBackend("Não foi possível carregar os colaboradores.");
@@ -77,11 +101,12 @@ export default function AdmCompHome({ Usuario, onLogout }) {
     setRecarga((n) => n + 1);
   };
 
+  const colaboradores = pessoas.filter((p) => p.role === "employee");
   const convitesPendentes = colaboradores.filter((c) => c.status === "invited").length;
 
   return (
     <PainelLayout
-      titulo="ERP Empresa"
+      titulo={empresa?.name || "ERP Empresa"}
       menuItems={MENU}
       abaSelecionada={ABA_DO_MENU[abaAtiva] || abaAtiva}
       onMudarAba={setAbaAtiva}
@@ -128,6 +153,8 @@ export default function AdmCompHome({ Usuario, onLogout }) {
           carregando={carregando}
           onNovo={() => setAbaAtiva("registro")}
           onAlocacoes={setColaboradorAlocacoes}
+          onCompetencias={setColaboradorCompetencias}
+          onSalario={setColaboradorSalario}
           onEditar={setColaboradorEmEdicao}
         />
       )}
@@ -146,7 +173,14 @@ export default function AdmCompHome({ Usuario, onLogout }) {
       )}
 
       {abaAtiva === "projetos" && (
-        <ListaProjetos projetos={projetos} carregando={carregando} onNovo={() => setAbaAtiva("criar-projeto")} />
+        <ListaProjetos
+          projetos={projetos}
+          carregando={carregando}
+          pessoas={pessoas}
+          onNovo={() => setAbaAtiva("criar-projeto")}
+          onVerEquipa={setProjetoEquipa}
+          onEditar={setProjetoEmEdicao}
+        />
       )}
 
       {abaAtiva === "criar-projeto" && (
@@ -154,12 +188,110 @@ export default function AdmCompHome({ Usuario, onLogout }) {
           <BotaoVoltar onClick={() => setAbaAtiva("projetos")}>Voltar à lista de projetos</BotaoVoltar>
           <FormNovoProjeto
             companyId={companyId}
+            pessoas={pessoas.filter((p) => p.status === "active")}
             onSucesso={() => {
               recarregarDados();
               setAbaAtiva("projetos");
             }}
           />
         </div>
+      )}
+
+      {abaAtiva === "avaliacoes" && (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {[
+              ["ciclos", "Ciclos da empresa"],
+              ["resultados", "Resultados por pessoa"],
+              ["meus", "Os meus pedidos"],
+            ].map(([valor, rotulo]) => (
+              <button
+                key={valor}
+                type="button"
+                aria-pressed={vistaAvaliacoes === valor}
+                onClick={() => setVistaAvaliacoes(valor)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${vistaAvaliacoes === valor ? tema.active : tema.secondaryBtn}`}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+          {vistaAvaliacoes === "ciclos" ? (
+            <GestaoAvaliacoes token={token} pessoas={pessoas} />
+          ) : vistaAvaliacoes === "resultados" ? (
+            <ResultadosPorPessoa token={token} pessoas={pessoas} />
+          ) : (
+            <CaixaAvaliacoes token={token} pessoas={pessoas} />
+          )}
+        </div>
+      )}
+
+      {abaAtiva === "competencias" && <CatalogoCompetencias token={token} pessoas={pessoas} />}
+
+      {abaAtiva === "empresa" && (
+        <div className="max-w-4xl space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold">Dados da empresa</h1>
+              <p className={`mt-1 text-xs ${tema.muted}`}>Informação cadastral usada nos e-mails e documentos.</p>
+            </div>
+            <button
+              type="button"
+              disabled={!empresa}
+              onClick={() => setEditarEmpresaAberto(true)}
+              className={`rounded-xl px-4 py-2.5 text-xs font-bold shadow-md transition disabled:opacity-50 ${tema.primaryBtn}`}
+            >
+              Editar dados
+            </button>
+          </div>
+          <ListaDados
+            titulo="Dados cadastrais"
+            campos={[
+              ["Nome", empresa ? empresa.name : "A carregar…"],
+              ["NIF / Tax ID", empresa?.taxId || "Não registado"],
+              ["E-mail de contacto", empresa?.email || "Não registado"],
+              ["País", empresa?.country || "Não registado"],
+            ]}
+          />
+        </div>
+      )}
+
+      {editarEmpresaAberto && empresa && (
+        <ModalEditarEmpresa
+          empresa={empresa}
+          podeAlterarNif={false}
+          token={token}
+          onFechar={() => setEditarEmpresaAberto(false)}
+          onGuardada={(atualizada) => {
+            setEmpresa(atualizada);
+            setEditarEmpresaAberto(false);
+          }}
+        />
+      )}
+
+      {colaboradorCompetencias && (
+        <ModalCompetencias
+          colaborador={colaboradorCompetencias}
+          token={token}
+          onFechar={() => setColaboradorCompetencias(null)}
+        />
+      )}
+
+      {colaboradorSalario && (
+        <ModalSalario colaborador={colaboradorSalario} token={token} onFechar={() => setColaboradorSalario(null)} />
+      )}
+
+      {projetoEmEdicao && (
+        <ModalEditarProjeto
+          projeto={projetoEmEdicao}
+          pessoas={pessoas.filter((p) => p.status === "active" || p.id === projetoEmEdicao.managerId)}
+          token={token}
+          onFechar={() => setProjetoEmEdicao(null)}
+          onGuardado={() => {
+            setProjetoEmEdicao(null);
+            recarregarDados();
+          }}
+        />
       )}
 
       {colaboradorEmEdicao && (
@@ -171,6 +303,16 @@ export default function AdmCompHome({ Usuario, onLogout }) {
             setColaboradorEmEdicao(null);
             recarregarDados();
           }}
+          onEstadoAlterado={recarregarDados}
+        />
+      )}
+
+      {projetoEquipa && (
+        <ModalEquipaProjeto
+          projeto={projetoEquipa}
+          colaboradores={pessoas}
+          token={token}
+          onFechar={() => setProjetoEquipa(null)}
         />
       )}
 

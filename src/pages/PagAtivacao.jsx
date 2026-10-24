@@ -4,6 +4,7 @@ import { useTheme } from "../theme/tema";
 import EcraAutenticacao from "../components/layout/EcraAutenticacao";
 import Alerta from "../components/ui/Alerta";
 import CampoSenha from "../components/ui/CampoSenha";
+import { ERRO_SENHA_FRACA, REGRAS_SENHA, senhaValida } from "../utils/senha";
 
 export default function PagAtivacao({ onConcluido }) {
   const tema = useTheme();
@@ -26,14 +27,8 @@ export default function PagAtivacao({ onConcluido }) {
       return;
     }
 
-    if (
-      senha.length < 8 ||
-      !/[a-z]/.test(senha) ||
-      !/[A-Z]/.test(senha) ||
-      !/[0-9]/.test(senha) ||
-      !/[@$!%*?&#]/.test(senha)
-    ) {
-      setErro("Use pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e um símbolo (@$!%*?&#).");
+    if (!senhaValida(senha)) {
+      setErro(ERRO_SENHA_FRACA);
       return;
     }
 
@@ -78,7 +73,7 @@ export default function PagAtivacao({ onConcluido }) {
           <CampoSenha
             id="ativacao-senha"
             label="Nova senha"
-            ajuda="Mínimo de 8 caracteres, com maiúscula, minúscula, número e símbolo."
+            ajuda={REGRAS_SENHA}
             disabled={carregando}
             minLength={8}
             autoComplete="new-password"
