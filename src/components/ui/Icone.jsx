@@ -66,6 +66,26 @@ const CAMINHOS = {
   ),
   voltar: <path d="M19 12H5M12 19l-7-7 7-7" />,
   mais: <path d="M12 5v14M5 12h14" />,
+  estrela: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />,
+  moeda: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15 9.5a3 3 0 0 0-3-1.5c-1.7 0-3 .9-3 2s1.3 1.7 3 2 3 .9 3 2-1.3 2-3 2a3 3 0 0 1-3-1.5M12 6.5v1.5M12 16v1.5" />
+    </>
+  ),
+  avaliacao: (
+    <>
+      <path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3" />
+      <rect x="9" y="2.5" width="6" height="3.5" rx="1" />
+      <path d="m9 13 2 2 4-4" />
+    </>
+  ),
+  chave: (
+    <>
+      <circle cx="7.5" cy="15.5" r="4.5" />
+      <path d="m10.7 12.3 9.3-9.3M17 6l3 3M14 9l2 2" />
+    </>
+  ),
 };
 
 export default function Icone({ nome, className = "h-5 w-5" }) {

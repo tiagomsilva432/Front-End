@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdmHome from "../pages/PagAdm";
 import AdmCompHome from "../pages/PagCompAdm";
 import FuncHome from "../pages/PagTrab";
 import { authService } from "../services/authservice";
 import PagLogin from "../pages/PagLogin";
 import PagAtivacao from "../pages/PagAtivacao";
+import PagRedefinirSenha from "../pages/PagRedefinirSenha";
+import { useTheme } from "../theme/tema";
 
 export default function AppRoutes() {
   // 1. O Hook fica no topo absoluto (respeita a regra do React e evita erros do ESLint)
@@ -17,12 +19,55 @@ export default function AppRoutes() {
     }
   });
 
+  // Se havia uma sessão guardada, confirma no servidor (GET /auth/me) antes de mostrar o painel:
+  // a conta pode ter sido suspensa ou o token pode ter expirado desde o último acesso.
+  const [sessaoValidada, setSessaoValidada] = useState(() => !usuario);
+  const tema = useTheme();
+
+  useEffect(() => {
+    if (sessaoValidada) return;
+    let ativo = true;
+    authService
+      .validarSessao()
+      .then((dadosServidor) => {
+        if (!ativo) return;
+        setUsuario((atual) => {
+          const atualizado = { ...atual, ...dadosServidor };
+          localStorage.setItem("usuario_sessao", JSON.stringify(atualizado));
+          return atualizado;
+        });
+      })
+      .catch((err) => {
+        if (!ativo) return;
+        // 401/403: sessão inválida ou conta inativa. Sem resposta do servidor, mantém-se a sessão.
+        if (err.status === 401 || err.status === 403) {
+          authService.logout();
+          setUsuario(null);
+        }
+      })
+      .finally(() => {
+        if (ativo) setSessaoValidada(true);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [sessaoValidada]);
+
   // 2. Interceção prioritária da rota de ativação via e-mail
   if (
     window.location.pathname === "/ativar-conta" ||
     window.location.pathname === "/auth/account/activate"
   ) {
     return <PagAtivacao />;
+  }
+
+  // Recuperação de senha: sem token pede o e-mail; com ?token= (link do e-mail) pede a nova senha.
+  // "/auth/password/reset" fica só para os links antigos que já tenham sido enviados.
+  if (
+    window.location.pathname === "/redefinir-senha" ||
+    window.location.pathname === "/auth/password/reset"
+  ) {
+    return <PagRedefinirSenha />;
   }
 
   // O authService.login já guarda o token e a sessão no localStorage.
@@ -36,6 +81,14 @@ export default function AppRoutes() {
   };
 
   // 3. Se não houver sessão, apresenta o ecrã de login
+  if (usuario && !sessaoValidada) {
+    return (
+      <div className={`flex min-h-screen items-center justify-center text-sm ${tema.page}`}>
+        A validar a sessão…
+      </div>
+    );
+  }
+
   if (!usuario) {
     return <PagLogin onLogin={handleLogin} />;
   }

@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { obterUser } from "../services/userservice";
 import { listarAlocacoesUser, obterCargaAlocacao } from "../services/allocationservice";
 import { listarProjetos } from "../services/projetoservice";
+import { CATEGORIAS_COMPETENCIA, listarCompetenciasUser } from "../services/skillservice";
+import { listarSalarios, obterSalarioAtual } from "../services/salaryservice";
+import HistoricoSalarios from "../components/salarios/HistoricoSalarios";
+import NivelCompetencia from "../components/ui/NivelCompetencia";
+import CaixaAvaliacoes from "../components/avaliacoes/CaixaAvaliacoes";
 import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
 import Alerta from "../components/ui/Alerta";
@@ -9,11 +14,12 @@ import CartaoMetrica from "../components/ui/CartaoMetrica";
 import ListaDados from "../components/ui/ListaDados";
 import ListaAlocacoes from "../components/colaborador/ListaAlocacoes";
 import { useTheme } from "../theme/tema";
-import { formatarData, idDe, nomeCompleto } from "../utils/formatar";
+import { alocacaoEmCurso, formatarData, idDe, nomeCompleto } from "../utils/formatar";
 
 const MENU = [
   { id: "overview", label: "Visão geral", icone: "painel" },
   { id: "projetos", label: "Meus projetos", icone: "pasta" },
+  { id: "avaliacoes", label: "Avaliações", icone: "avaliacao" },
   { id: "perfil", label: "O meu perfil", icone: "utilizador" },
 ];
 
@@ -43,6 +49,28 @@ export default function FuncHome({ Usuario, onLogout }) {
 
   const [projetosEmpresa, setProjetosEmpresa] = useState([]);
 
+  const [competencias, setCompetencias] = useState({ carregando: Boolean(userId), lista: [], erro: "" });
+  const [salario, setSalario] = useState({ carregando: Boolean(userId), historico: [], atual: null, erro: "" });
+
+  // Competências e salário (só leitura: são definidos pelo administrador da empresa).
+  useEffect(() => {
+    if (!userId) return;
+    let ativo = true;
+    listarCompetenciasUser(userId, token)
+      .then((lista) => ativo && setCompetencias({ carregando: false, lista: Array.isArray(lista) ? lista : [], erro: "" }))
+      .catch((erro) => ativo && setCompetencias({ carregando: false, lista: [], erro: erro.message || "Não foi possível carregar as competências." }));
+    Promise.all([listarSalarios(userId, token), obterSalarioAtual(userId, token)])
+      .then(([historico, atual]) =>
+        ativo && setSalario({ carregando: false, historico: Array.isArray(historico) ? historico : [], atual, erro: "" }),
+      )
+      .catch((erro) =>
+        ativo && setSalario({ carregando: false, historico: [], atual: null, erro: erro.message || "Não foi possível carregar o salário." }),
+      );
+    return () => {
+      ativo = false;
+    };
+  }, [userId, token]);
+
   // Dados da conta e do perfil.
   useEffect(() => {
     if (!userId) return;
@@ -68,10 +96,11 @@ export default function FuncHome({ Usuario, onLogout }) {
   useEffect(() => {
     if (!userId) return;
     let ativo = true;
-    Promise.all([listarAlocacoesUser(userId, token, true), obterCargaAlocacao(userId, token)])
+    Promise.all([listarAlocacoesUser(userId, token, false), obterCargaAlocacao(userId, token)])
       .then(([lista, carga]) => {
         if (!ativo) return;
-        setAlocacoes(Array.isArray(lista) ? lista : []);
+        // Inclui as que têm data de fim futura; as já terminadas ficam de fora.
+        setAlocacoes(Array.isArray(lista) ? lista.filter(alocacaoEmCurso) : []);
         setCargaAlocacao(carga);
         setErroAlocacoes("");
       })
@@ -215,6 +244,8 @@ export default function FuncHome({ Usuario, onLogout }) {
         </div>
       )}
 
+      {abaAtiva === "avaliacoes" && <CaixaAvaliacoes token={token} />}
+
       {abaAtiva === "perfil" && (
         <div className="space-y-5">
           <div>
@@ -235,6 +266,40 @@ export default function FuncHome({ Usuario, onLogout }) {
               ["Data de admissão", formatarData(perfil?.hireDate)],
             ]}
           />
+
+          <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
+            <h2 className="font-semibold">As minhas competências</h2>
+            {competencias.erro && <Alerta className="mt-4">{competencias.erro}</Alerta>}
+            {competencias.carregando ? (
+              <p className={`mt-4 text-sm ${tema.muted}`}>A carregar…</p>
+            ) : competencias.lista.length === 0 && !competencias.erro ? (
+              <p className={`mt-4 text-sm ${tema.muted}`}>Ainda não tem competências registadas.</p>
+            ) : (
+              <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {competencias.lista.map((c) => (
+                  <li key={c.skillId} className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${tema.border} ${tema.cardMuted}`}>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{c.name}</p>
+                      <p className={`text-xs ${tema.muted}`}>
+                        {CATEGORIAS_COMPETENCIA[c.category] || c.category}
+                        {c.yearsExperience ? ` · ${Number(c.yearsExperience)} anos` : ""}
+                      </p>
+                    </div>
+                    <NivelCompetencia nivel={c.proficiency} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
+            <h2 className="mb-4 font-semibold">O meu salário</h2>
+            {salario.erro ? (
+              <Alerta>{salario.erro}</Alerta>
+            ) : (
+              <HistoricoSalarios historico={salario.historico} atual={salario.atual} carregando={salario.carregando} />
+            )}
+          </section>
         </div>
       )}
     </PainelLayout>

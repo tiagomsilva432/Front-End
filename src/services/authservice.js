@@ -49,4 +49,43 @@ export const authService = {
       body: { signupToken: token, password },
     });
   },
+
+  // Envia o e-mail com o link de recuperação (responde sempre 200, mesmo que o e-mail não exista).
+  async pedirRedefinicaoSenha(email) {
+    return apiRequest("/auth/password/reset", {
+      method: "POST",
+      body: { email },
+    });
+  },
+
+  // Volta a enviar o e-mail de ativação a uma conta com o convite pendente.
+  async reenviarConvite(userId) {
+    return apiRequest(`/auth/account/${userId}/resend-activation`, {
+      method: "POST",
+      token: this.obterToken(),
+    });
+  },
+
+  // Troca a senha da própria conta (pede a senha atual).
+  async alterarSenha({ currentPassword, newPassword }) {
+    return apiRequest("/auth/password/change", {
+      method: "POST",
+      token: this.obterToken(),
+      body: { currentPassword, newPassword },
+    });
+  },
+
+  // Confirma no servidor que a sessão guardada continua válida e a conta ativa.
+  async validarSessao() {
+    const resultado = await apiRequest("/auth/me", { token: this.obterToken() });
+    return resultado?.data ?? resultado;
+  },
+
+  // Define a nova senha com o token que veio no link do e-mail.
+  async confirmarRedefinicaoSenha({ token, password }) {
+    return apiRequest("/auth/password/reset/confirm", {
+      method: "POST",
+      body: { token, password },
+    });
+  },
 };

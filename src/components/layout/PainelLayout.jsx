@@ -3,6 +3,7 @@ import { useTheme } from "../../theme/tema";
 import logo from "../../assets/logo.png";
 import Icone from "../ui/Icone";
 import BotaoTema from "../ui/BotaoTema";
+import ModalAlterarSenha from "../conta/ModalAlterarSenha";
 
 // Estrutura comum dos painéis: barra lateral (desktop), cabeçalho com menu (telemóvel) e conteúdo.
 export default function PainelLayout({
@@ -17,6 +18,7 @@ export default function PainelLayout({
 }) {
   const tema = useTheme();
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
+  const [alterarSenhaAberto, setAlterarSenhaAberto] = useState(false);
   const itemAtual = menuItems.find((item) => item.id === abaSelecionada) || menuItems[0];
 
   const botaoMenu = (item, mobile) => {
@@ -74,6 +76,17 @@ export default function PainelLayout({
             {menuItems.map((item) => botaoMenu(item, true))}
             <button
               type="button"
+              onClick={() => {
+                setAlterarSenhaAberto(true);
+                setMenuMobileAberto(false);
+              }}
+              className={`mt-2 flex w-full items-center gap-3 rounded-xl border border-transparent px-3.5 py-3 text-left text-sm font-medium ${tema.muted} ${tema.hover}`}
+            >
+              <Icone nome="chave" className="h-5 w-5" />
+              Alterar senha
+            </button>
+            <button
+              type="button"
               onClick={onLogout}
               className="mt-2 flex w-full items-center gap-3 rounded-xl border border-red-500/20 px-3.5 py-3 text-left text-sm font-semibold text-red-500 hover:bg-red-500/10"
             >
@@ -109,6 +122,14 @@ export default function PainelLayout({
               <p className={`text-xs ${tema.muted}`}>{papel}</p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setAlterarSenhaAberto(true)}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-colors ${tema.secondaryBtn}`}
+          >
+            <Icone nome="chave" className="h-4 w-4" />
+            Alterar senha
+          </button>
           <div className="flex gap-2">
             <BotaoTema className="flex-1" />
             <button
@@ -127,6 +148,8 @@ export default function PainelLayout({
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">{children}</div>
       </main>
+
+      {alterarSenhaAberto && <ModalAlterarSenha onFechar={() => setAlterarSenhaAberto(false)} />}
     </div>
   );
 }

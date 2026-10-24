@@ -5,6 +5,7 @@ import { hojeISO } from "../../utils/formatar";
 import Alerta from "../ui/Alerta";
 import Campo from "../ui/Campo";
 import Modal from "../ui/Modal";
+import AcoesEstadoConta from "../conta/AcoesEstadoConta";
 
 const CAMPOS = [
   ["firstName", "Primeiro nome", "text", true],
@@ -16,7 +17,7 @@ const CAMPOS = [
 ];
 const OPCIONAIS = ["phone", "address", "birthDate", "jobTitle", "avatarUrl"];
 
-export default function ModalEditarColaborador({ colaborador, token, onFechar, onGuardado }) {
+export default function ModalEditarColaborador({ colaborador, token, onFechar, onGuardado, onEstadoAlterado }) {
   const tema = useTheme();
   const [perfil, setPerfil] = useState(() => {
     const atual = colaborador.profile || {};
@@ -103,6 +104,10 @@ export default function ModalEditarColaborador({ colaborador, token, onFechar, o
           </button>
         </div>
       </form>
+
+      <div className={`mt-6 border-t pt-5 ${tema.border}`}>
+        <AcoesEstadoConta conta={colaborador} token={token} onAlterado={onEstadoAlterado} />
+      </div>
     </Modal>
   );
 }

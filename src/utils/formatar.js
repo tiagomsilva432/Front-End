@@ -25,4 +25,16 @@ export function formatarEuros(valor) {
   return Number(valor).toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
 }
 
+// Montante numa moeda ISO qualquer (os salários podem não ser em euros).
+export function formatarMontante(valor, moeda = "EUR") {
+  try {
+    return Number(valor).toLocaleString("pt-PT", { style: "currency", currency: moeda });
+  } catch {
+    return `${valor} ${moeda}`;
+  }
+}
+
 export const idDe = (item) => item?.id || item?._id;
+
+// Uma alocação está em curso se não tem data de fim ou se a data de fim ainda não passou.
+export const alocacaoEmCurso = (alocacao) => !alocacao.endDate || alocacao.endDate >= hojeISO();

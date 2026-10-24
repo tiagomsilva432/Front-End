@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useTheme } from "../../theme/tema";
 import { idDe, nomeCompleto } from "../../utils/formatar";
+import BotaoReenviarConvite from "../ui/BotaoReenviarConvite";
 import EstadoConta from "../ui/EstadoConta";
 import Icone from "../ui/Icone";
 
 // Diretório de colaboradores: pesquisa, cartões (telemóvel/tablet) e tabela (ecrãs largos).
-export default function ListaColaboradores({ colaboradores, carregando, onNovo, onAlocacoes, onEditar }) {
+export default function ListaColaboradores({ colaboradores, carregando, onNovo, onAlocacoes, onCompetencias, onSalario, onEditar }) {
   const tema = useTheme();
   const [busca, setBusca] = useState("");
 
@@ -78,12 +79,31 @@ export default function ListaColaboradores({ colaboradores, carregando, onNovo, 
                 </button>
                 <button
                   type="button"
+                  onClick={() => onCompetencias(colab)}
+                  className={`rounded-lg border px-3 py-2.5 font-semibold ${tema.secondaryBtn}`}
+                >
+                  Competências
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSalario(colab)}
+                  className={`rounded-lg border px-3 py-2.5 font-semibold ${tema.secondaryBtn}`}
+                >
+                  Salário
+                </button>
+                <button
+                  type="button"
                   onClick={() => onEditar(colab)}
                   className={`rounded-lg border px-3 py-2.5 font-semibold ${tema.border} ${tema.accent}`}
                 >
                   Editar perfil
                 </button>
               </div>
+              {colab.status === "invited" && (
+                <div className="mt-3 text-center">
+                  <BotaoReenviarConvite userId={colab.id} />
+                </div>
+              )}
             </article>
           ))
         )}
@@ -115,12 +135,21 @@ export default function ListaColaboradores({ colaboradores, carregando, onNovo, 
                   <td className={`break-all px-6 py-4 font-mono text-xs ${tema.muted}`}>{colab.email || "—"}</td>
                   <td className="px-6 py-4">{colab.profile?.jobTitle || "Colaborador"}</td>
                   <td className="px-6 py-4">
-                    <EstadoConta estado={colab.status} />
+                    <div className="flex flex-col items-start gap-1.5">
+                      <EstadoConta estado={colab.status} />
+                      {colab.status === "invited" && <BotaoReenviarConvite userId={colab.id} />}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-4 whitespace-nowrap text-xs font-bold">
                       <button type="button" onClick={() => onAlocacoes(colab)} className={`hover:underline ${tema.strong}`}>
                         Alocações
+                      </button>
+                      <button type="button" onClick={() => onCompetencias(colab)} className={`hover:underline ${tema.strong}`}>
+                        Competências
+                      </button>
+                      <button type="button" onClick={() => onSalario(colab)} className={`hover:underline ${tema.strong}`}>
+                        Salário
                       </button>
                       <button type="button" onClick={() => onEditar(colab)} className={`hover:underline ${tema.accent}`}>
                         Editar

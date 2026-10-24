@@ -9,9 +9,13 @@ import CartaoEmpresa from "../components/admin/CartaoEmpresa";
 import ResumoEmpresa from "../components/admin/ResumoEmpresa";
 import ModalCriarEmpresa from "../components/admin/ModalCriarEmpresa";
 import ModalConvidarAdmin from "../components/admin/ModalConvidarAdmin";
+import CatalogoCompetencias from "../components/competencias/CatalogoCompetencias";
 import { useTheme } from "../theme/tema";
 
-const MENU = [{ id: "empresas", label: "Empresas", icone: "empresa" }];
+const MENU = [
+  { id: "empresas", label: "Empresas", icone: "empresa" },
+  { id: "competencias", label: "Competências", icone: "estrela" },
+];
 
 export default function PainelGeralAdmin({ Usuario, onLogout }) {
   const tema = useTheme();
@@ -26,6 +30,7 @@ export default function PainelGeralAdmin({ Usuario, onLogout }) {
   const [companiaSelecionada, setCompaniaSelecionada] = useState(null);
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
   const [empresaParaConvidar, setEmpresaParaConvidar] = useState(null);
+  const [abaAtiva, setAbaAtiva] = useState("empresas");
 
   // Lista de empresas.
   useEffect(() => {
@@ -83,14 +88,31 @@ export default function PainelGeralAdmin({ Usuario, onLogout }) {
     <PainelLayout
       titulo="Administração"
       menuItems={MENU}
-      abaSelecionada="empresas"
-      onMudarAba={() => setCompaniaSelecionada(null)}
+      abaSelecionada={abaAtiva}
+      onMudarAba={(aba) => {
+        setAbaAtiva(aba);
+        setCompaniaSelecionada(null);
+      }}
       email={Usuario?.email}
       papel="Administrador do sistema"
       onLogout={onLogout}
     >
-      {companiaSelecionada ? (
-        <ResumoEmpresa empresa={companiaSelecionada} onVoltar={() => setCompaniaSelecionada(null)} />
+      {abaAtiva === "competencias" ? (
+        <CatalogoCompetencias token={token} podeEditar />
+      ) : companiaSelecionada ? (
+        <ResumoEmpresa
+          empresa={companiaSelecionada}
+          admin={adminsPorEmpresa[companiaSelecionada.id]}
+          token={token}
+          onVoltar={() => setCompaniaSelecionada(null)}
+          onEmpresaAtualizada={(atualizada) => {
+            setCompaniaSelecionada(atualizada);
+            setCompanias((atuais) => atuais.map((e) => (e.id === atualizada.id ? atualizada : e)));
+          }}
+          onAdminAtualizado={(conta) =>
+            setAdminsPorEmpresa((atuais) => ({ ...atuais, [companiaSelecionada.id]: conta }))
+          }
+        />
       ) : (
         <>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
