@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { criarAlocacao, listarAlocacoesUser, obterCargaAlocacao } from "../../services/allocationservice";
 import { useTheme } from "../../theme/tema";
-import { formatarData, hojeISO, idDe, nomeCompleto } from "../../utils/formatar";
+import { alocacaoEmCurso, hojeISO, idDe, nomeCompleto } from "../../utils/formatar";
 import Alerta from "../ui/Alerta";
 import Campo from "../ui/Campo";
 import Modal from "../ui/Modal";
+import LinhaAlocacao from "./LinhaAlocacao";
 
 const alocacaoVazia = () => ({
   projectId: "",
@@ -27,7 +28,7 @@ export default function ModalAlocacoes({ colaborador, projetos, token, onFechar 
 
   useEffect(() => {
     let ativo = true;
-    Promise.all([listarAlocacoesUser(colaborador.id, token, true), obterCargaAlocacao(colaborador.id, token)])
+    Promise.all([listarAlocacoesUser(colaborador.id, token, false), obterCargaAlocacao(colaborador.id, token)])
       .then(([lista, cargaAtual]) => {
         if (!ativo) return;
         setAlocacoes(Array.isArray(lista) ? lista : []);
@@ -83,6 +84,21 @@ export default function ModalAlocacoes({ colaborador, projetos, token, onFechar 
   const percentagemNova = Number(nova.allocationPercent);
   const vaiSobrealocar = carga?.overAllocated || (percentagemNova > 0 && totalAtual + percentagemNova > 100);
   const nome = nomeCompleto(colaborador);
+  const emCurso = alocacoes.filter(alocacaoEmCurso);
+  const historico = alocacoes.filter((alocacao) => !alocacaoEmCurso(alocacao));
+
+  const linha = (alocacao) => (
+    <LinhaAlocacao
+      key={alocacao.id}
+      alocacao={alocacao}
+      nomeProjeto={projetos.find((item) => idDe(item) === alocacao.projectId)?.name || "Projeto"}
+      token={token}
+      onAlterada={(mensagem) => {
+        setSucesso(mensagem);
+        recarregar();
+      }}
+    />
+  );
 
   return (
     <Modal
@@ -127,32 +143,20 @@ export default function ModalAlocacoes({ colaborador, projetos, token, onFechar 
 
         <div>
           <h3 className="mb-3 text-sm font-semibold">Projetos atuais</h3>
-          {carregando || alocacoes.length === 0 ? (
+          {carregando || emCurso.length === 0 ? (
             <p className={`rounded-xl border p-4 text-sm ${tema.border} ${tema.muted}`}>
-              {carregando ? "A carregar alocações…" : "Ainda não há alocações abertas para este colaborador."}
+              {carregando ? "A carregar alocações…" : "Ainda não há alocações em curso para este colaborador."}
             </p>
           ) : (
-            <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
-              {alocacoes.map((alocacao) => {
-                const projeto = projetos.find((item) => idDe(item) === alocacao.projectId);
-                return (
-                  <div
-                    key={alocacao.id}
-                    className={`flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ${tema.border} ${tema.cardMuted}`}
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{projeto?.name || "Projeto"}</p>
-                      <p className={`mt-1 text-xs ${tema.muted}`}>
-                        {alocacao.roleOnProject || "Função não definida"} · Desde {formatarData(alocacao.startDate)}
-                      </p>
-                    </div>
-                    <span className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-sm font-bold ${tema.active}`}>
-                      {alocacao.allocationPercent}%
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            <div className="max-h-72 space-y-2 overflow-y-auto pr-1">{emCurso.map(linha)}</div>
+          )}
+          {!carregando && historico.length > 0 && (
+            <details className="mt-3">
+              <summary className={`cursor-pointer text-xs font-semibold ${tema.muted}`}>
+                Histórico ({historico.length} {historico.length === 1 ? "alocação terminada" : "alocações terminadas"})
+              </summary>
+              <div className="mt-2 max-h-52 space-y-2 overflow-y-auto pr-1">{historico.map(linha)}</div>
+            </details>
           )}
         </div>
 

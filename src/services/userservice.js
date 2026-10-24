@@ -26,3 +26,13 @@ export const atualizarPerfilUser = async (userId, perfil, token) => {
   });
   return dadosResposta(resultado);
 };
+
+// active ⇄ suspended; qualquer estado → terminated (definitivo). Nunca na própria conta.
+export const alterarEstadoUser = async (userId, status, token) => {
+  const resultado = await apiRequest(`/users/${userId}/status`, {
+    method: "PATCH",
+    token,
+    body: { status },
+  });
+  return dadosResposta(resultado);
+};

@@ -1,5 +1,6 @@
 import { useTheme } from "../../theme/tema";
 import { nomeCompleto } from "../../utils/formatar";
+import BotaoReenviarConvite from "../ui/BotaoReenviarConvite";
 import Icone from "../ui/Icone";
 
 export default function CartaoEmpresa({ empresa, admin, carregandoAdmin, erroAdmin, onVer, onConvidar }) {
@@ -16,9 +17,17 @@ export default function CartaoEmpresa({ empresa, admin, carregandoAdmin, erroAdm
     );
   } else if (admin) {
     estadoAdmin = (
-      <p className={`rounded-xl border px-3 py-2.5 text-center text-xs ${tema.chip}`}>
-        Administrador: <span className={`font-semibold ${tema.accent}`}>{nomeCompleto(admin) || admin.email}</span>
-      </p>
+      <div className={`space-y-1.5 rounded-xl border px-3 py-2.5 text-center text-xs ${tema.chip}`}>
+        <p>
+          Administrador: <span className={`font-semibold ${tema.accent}`}>{nomeCompleto(admin) || admin.email}</span>
+        </p>
+        {admin.status === "invited" && (
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span className={tema.muted}>Convite pendente ·</span>
+            <BotaoReenviarConvite userId={admin.id} />
+          </p>
+        )}
+      </div>
     );
   } else {
     estadoAdmin = (

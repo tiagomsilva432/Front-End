@@ -14,3 +14,15 @@ export const criarAlocacao = (dados, token) =>
     token,
     body: dados,
   });
+
+// Altera só os campos enviados. endDate = data termina a alocação; endDate = null reabre-a.
+export const atualizarAlocacao = (id, dados, token) =>
+  apiRequest(`/allocations/${id}`, {
+    method: "PATCH",
+    token,
+    body: dados,
+  }).then(dadosResposta);
+
+// Só para corrigir um engano: terminar trabalho real faz-se com endDate, que guarda o histórico.
+export const apagarAlocacao = (id, token) =>
+  apiRequest(`/allocations/${id}`, { method: "DELETE", token });

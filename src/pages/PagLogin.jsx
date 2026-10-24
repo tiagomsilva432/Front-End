@@ -59,7 +59,10 @@ function PagLogin({ onLogin }) {
   };
 
   return (
-    <EcraAutenticacao titulo="Bem-vindo" subtitulo="Entre na sua conta para continuar.">
+    <EcraAutenticacao
+      titulo="Bem-vindo"
+      subtitulo="Entre na sua conta para continuar."
+    >
       {erro && <Alerta className="mb-5">{erro}</Alerta>}
 
       <form onSubmit={Login} className="space-y-5">
@@ -97,12 +100,16 @@ function PagLogin({ onLogin }) {
             <legend className={`mb-1 text-sm font-medium ${tema.label}`}>
               Esta conta está associada a várias empresas
             </legend>
-            <p className={`mb-3 text-xs ${tema.muted}`}>Escolha onde pretende entrar para continuar.</p>
+            <p className={`mb-3 text-xs ${tema.muted}`}>
+              Escolha onde pretende entrar para continuar.
+            </p>
             {empresas.map((empresa) => (
               <label
                 key={empresa.companyId}
                 className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition ${
-                  empresaSelecionada === empresa.companyId ? tema.active : `${tema.border} ${tema.hover}`
+                  empresaSelecionada === empresa.companyId
+                    ? tema.active
+                    : `${tema.border} ${tema.hover}`
                 }`}
               >
                 <input
@@ -117,7 +124,9 @@ function PagLogin({ onLogin }) {
                   className="h-4 w-4 accent-emerald-600"
                   disabled={carregando}
                 />
-                <span className="text-sm font-medium">{empresa.companyName || "Empresa sem nome"}</span>
+                <span className="text-sm font-medium">
+                  {empresa.companyName || "Empresa sem nome"}
+                </span>
               </label>
             ))}
           </fieldset>
@@ -128,9 +137,20 @@ function PagLogin({ onLogin }) {
           disabled={carregando || (empresas.length > 0 && !empresaSelecionada)}
           className={`w-full rounded-xl py-3.5 text-sm font-semibold shadow-lg transition focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60 ${tema.primaryBtn}`}
         >
-          {carregando ? "A entrar..." : empresas.length > 0 ? "Continuar nesta empresa" : "Entrar na conta"}
+          {carregando
+            ? "A entrar..."
+            : empresas.length > 0
+              ? "Continuar nesta empresa"
+              : "Entrar na conta"}
         </button>
       </form>
+
+      <a
+        href="/redefinir-senha"
+        className={`mt-4 block text-center text-xs font-semibold hover:underline ${tema.accent}`}
+      >
+        Esqueci-me da senha
+      </a>
 
       <p className={`mt-6 text-center text-xs ${tema.muted}`}>
         Acesso reservado a utilizadores convidados pela empresa.

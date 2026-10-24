@@ -2,15 +2,16 @@ import { useState } from "react";
 import { criarProjeto } from "../../services/projetoservice";
 import { authService } from "../../services/authservice";
 import { useTheme } from "../../theme/tema";
-import { ESTADOS_PROJETO } from "../../utils/formatar";
+import { ESTADOS_PROJETO, idDe, nomeCompleto } from "../../utils/formatar";
 import Alerta from "../ui/Alerta";
 import Campo from "../ui/Campo";
 
-export default function FormNovoProjeto({ companyId, onSucesso }) {
+export default function FormNovoProjeto({ companyId, pessoas = [], onSucesso }) {
   const tema = useTheme();
   const [nome, setNome] = useState("");
   const [cliente, setCliente] = useState("");
   const [status, setStatus] = useState("planned");
+  const [gestor, setGestor] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [orcamento, setOrcamento] = useState("");
@@ -46,6 +47,7 @@ export default function FormNovoProjeto({ companyId, onSucesso }) {
       companyId,
       name: nome.trim(),
       clientName: cliente.trim() || undefined,
+      managerId: gestor || undefined,
       status,
       startDate: dataInicio || undefined,
       endDate: dataFim || undefined,
@@ -60,6 +62,7 @@ export default function FormNovoProjeto({ companyId, onSucesso }) {
       setNome("");
       setCliente("");
       setStatus("planned");
+      setGestor("");
       setDataInicio("");
       setDataFim("");
       setOrcamento("");
@@ -102,6 +105,14 @@ export default function FormNovoProjeto({ companyId, onSucesso }) {
           {Object.entries(ESTADOS_PROJETO).map(([valor, texto]) => (
             <option key={valor} value={valor}>
               {texto}
+            </option>
+          ))}
+        </Campo>
+        <Campo id="projeto-gestor" label="Gestor do projeto" como="select" value={gestor} onChange={(e) => setGestor(e.target.value)}>
+          <option value="">Sem gestor (pode definir mais tarde)</option>
+          {pessoas.map((pessoa) => (
+            <option key={idDe(pessoa)} value={idDe(pessoa)}>
+              {nomeCompleto(pessoa) || pessoa.email}
             </option>
           ))}
         </Campo>
