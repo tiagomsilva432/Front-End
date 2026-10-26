@@ -1,7 +1,10 @@
-import AdmHome from "./pages/PagAdm";
+import AppRoutes from "./routes/approutes";
+import ThemeProvider from "./theme/ThemeProvider";
 
-function App() {
-  return <AdmHome />;
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppRoutes />
+    </ThemeProvider>
+  );
 }
-
-export default App;
