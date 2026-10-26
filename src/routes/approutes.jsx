@@ -7,6 +7,7 @@ import PagLogin from "../pages/PagLogin";
 import PagAtivacao from "../pages/PagAtivacao";
 import PagRedefinirSenha from "../pages/PagRedefinirSenha";
 import { useTheme } from "../theme/tema";
+import NotificacoesProvider from "../notificacoes/NotificacoesProvider";
 
 export default function AppRoutes() {
   // 1. O Hook fica no topo absoluto (respeita a regra do React e evita erros do ESLint)
@@ -93,16 +94,22 @@ export default function AppRoutes() {
     return <PagLogin onLogin={handleLogin} />;
   }
 
-  // 4. Redirecionamento por cargo (Multi-tenant)
+  // 4. Redirecionamento por cargo (Multi-tenant). O NotificacoesProvider mantém o sino e o stream em tempo real.
+  const painel = (Painel) => (
+    <NotificacoesProvider token={authService.obterToken()} onSessaoTerminada={handleLogout}>
+      <Painel Usuario={usuario} onLogout={handleLogout} />
+    </NotificacoesProvider>
+  );
+
   switch (usuario.role) {
     case "system_admin":
-      return <AdmHome Usuario={usuario} onLogout={handleLogout} />;
+      return painel(AdmHome);
 
     case "company_admin":
-      return <AdmCompHome Usuario={usuario} onLogout={handleLogout} />;
+      return painel(AdmCompHome);
 
     case "employee":
-      return <FuncHome Usuario={usuario} onLogout={handleLogout} />;
+      return painel(FuncHome);
 
     default:
       return (

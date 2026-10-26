@@ -7,6 +7,9 @@ import { listarSalarios, obterSalarioAtual } from "../services/salaryservice";
 import HistoricoSalarios from "../components/salarios/HistoricoSalarios";
 import NivelCompetencia from "../components/ui/NivelCompetencia";
 import CaixaAvaliacoes from "../components/avaliacoes/CaixaAvaliacoes";
+import PaginaAnuncios from "../components/anuncios/PaginaAnuncios";
+import MinhasAusencias from "../components/ausencias/MinhasAusencias";
+import CalendarioMes from "../components/calendario/CalendarioMes";
 import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
 import Alerta from "../components/ui/Alerta";
@@ -14,12 +17,16 @@ import CartaoMetrica from "../components/ui/CartaoMetrica";
 import ListaDados from "../components/ui/ListaDados";
 import ListaAlocacoes from "../components/colaborador/ListaAlocacoes";
 import { useTheme } from "../theme/tema";
+import { useNotificacoes } from "../notificacoes/notificacoes";
 import { alocacaoEmCurso, formatarData, idDe, nomeCompleto } from "../utils/formatar";
 
 const MENU = [
   { id: "overview", label: "Visão geral", icone: "painel" },
   { id: "projetos", label: "Meus projetos", icone: "pasta" },
+  { id: "ausencias", label: "Ausências", icone: "relogio" },
+  { id: "calendario", label: "Calendário", icone: "calendario" },
   { id: "avaliacoes", label: "Avaliações", icone: "avaliacao" },
+  { id: "anuncios", label: "Anúncios", icone: "megafone" },
   { id: "perfil", label: "O meu perfil", icone: "utilizador" },
 ];
 
@@ -48,6 +55,7 @@ export default function FuncHome({ Usuario, onLogout }) {
   const [tentativaAlocacoes, setTentativaAlocacoes] = useState(0);
 
   const [projetosEmpresa, setProjetosEmpresa] = useState([]);
+  const { versaoDados } = useNotificacoes();
 
   const [competencias, setCompetencias] = useState({ carregando: Boolean(userId), lista: [], erro: "" });
   const [salario, setSalario] = useState({ carregando: Boolean(userId), historico: [], atual: null, erro: "" });
@@ -113,7 +121,7 @@ export default function FuncHome({ Usuario, onLogout }) {
     return () => {
       ativo = false;
     };
-  }, [userId, token, tentativaAlocacoes]);
+  }, [userId, token, tentativaAlocacoes, versaoDados]);
 
   // Projetos da empresa, para mostrar o nome de cada projeto alocado.
   useEffect(() => {
@@ -129,7 +137,7 @@ export default function FuncHome({ Usuario, onLogout }) {
     return () => {
       ativo = false;
     };
-  }, [dadosConta?.companyId, token]);
+  }, [dadosConta?.companyId, token, versaoDados]);
 
   const tentarConta = () => {
     setCarregandoConta(true);
@@ -151,6 +159,8 @@ export default function FuncHome({ Usuario, onLogout }) {
     ...alocacao,
     projeto: projetosPorId.get(alocacao.projectId),
   }));
+  // O gestor de um projeto (managerId) pode publicar anúncios nesse projeto.
+  const projetosGeridos = projetosEmpresa.filter((projeto) => projeto.managerId === userId);
   const valorConta = (valor) => (carregandoConta ? "A carregar…" : valor);
 
   const erroSemConta = !userId ? "Não foi possível identificar a conta autenticada." : "";
@@ -240,11 +250,19 @@ export default function FuncHome({ Usuario, onLogout }) {
           </div>
           {alertaAlocacoes}
           {avisoSobrealocacao}
-          <ListaAlocacoes alocacoes={projetosAlocados} carregando={carregandoAlocacoes} />
+          <ListaAlocacoes alocacoes={projetosAlocados} carregando={carregandoAlocacoes} token={token} />
         </div>
       )}
 
       {abaAtiva === "avaliacoes" && <CaixaAvaliacoes token={token} />}
+
+      {abaAtiva === "ausencias" && <MinhasAusencias token={token} userId={userId} />}
+
+      {abaAtiva === "calendario" && <CalendarioMes token={token} />}
+
+      {abaAtiva === "anuncios" && (
+        <PaginaAnuncios token={token} ambitos={projetosGeridos.length ? ["project"] : []} projetos={projetosGeridos} />
+      )}
 
       {abaAtiva === "perfil" && (
         <div className="space-y-5">

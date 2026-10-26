@@ -1,8 +1,10 @@
 import { useTheme } from "../../theme/tema";
 import { ESTADOS_PROJETO, formatarData } from "../../utils/formatar";
+import AnunciosProjeto from "../anuncios/AnunciosProjeto";
 
-// Lista das alocações do colaborador. `resumida` mostra linhas compactas (visão geral); caso contrário, cartões completos.
-export default function ListaAlocacoes({ alocacoes, carregando, resumida = false }) {
+// Lista das alocações do colaborador. `resumida` mostra linhas compactas (visão geral); caso contrário, cartões completos
+// (com os anúncios ativos de cada projeto, se houver `token`).
+export default function ListaAlocacoes({ alocacoes, carregando, resumida = false, token }) {
   const tema = useTheme();
 
   if (carregando || alocacoes.length === 0) {
@@ -66,6 +68,11 @@ export default function ListaAlocacoes({ alocacoes, carregando, resumida = false
               <dd className="mt-1">{formatarData(alocacao.endDate, "Sem data prevista")}</dd>
             </div>
           </dl>
+          {token && (
+            <div className="mt-4">
+              <AnunciosProjeto projectId={alocacao.projectId} token={token} compacto />
+            </div>
+          )}
         </article>
       ))}
     </div>
