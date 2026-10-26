@@ -66,6 +66,24 @@ const CAMINHOS = {
   ),
   voltar: <path d="M19 12H5M12 19l-7-7 7-7" />,
   mais: <path d="M12 5v14M5 12h14" />,
+  calendario: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M16 3v4M8 3v4M3 10h18" />
+    </>
+  ),
+  sino: (
+    <>
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+    </>
+  ),
+  megafone: (
+    <>
+      <path d="m3 11 15-6v14L3 13z" />
+      <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+    </>
+  ),
   estrela: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />,
   moeda: (
     <>

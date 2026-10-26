@@ -4,8 +4,12 @@ import logo from "../../assets/logo.png";
 import Icone from "../ui/Icone";
 import BotaoTema from "../ui/BotaoTema";
 import ModalAlterarSenha from "../conta/ModalAlterarSenha";
+import SinoNotificacoes from "../notificacoes/SinoNotificacoes";
+import FaixaAnuncios from "../anuncios/FaixaAnuncios";
+import { authService } from "../../services/authservice";
 
 // Estrutura comum dos painéis: barra lateral (desktop), cabeçalho com menu (telemóvel) e conteúdo.
+// Também mantém o sino de notificações (com o stream em tempo real) e as faixas de anúncios por ler.
 export default function PainelLayout({
   titulo,
   menuItems,
@@ -20,6 +24,8 @@ export default function PainelLayout({
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
   const [alterarSenhaAberto, setAlterarSenhaAberto] = useState(false);
   const itemAtual = menuItems.find((item) => item.id === abaSelecionada) || menuItems[0];
+  const token = authService.obterToken();
+  const temAbaAnuncios = menuItems.some((item) => item.id === "anuncios");
 
   const botaoMenu = (item, mobile) => {
     const selecionado = item.id === abaSelecionada;
@@ -57,6 +63,7 @@ export default function PainelLayout({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <SinoNotificacoes />
             <BotaoTema compacto />
             <button
               type="button"
@@ -117,10 +124,11 @@ export default function PainelLayout({
             <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${tema.iconBox}`}>
               {email?.charAt(0).toUpperCase() || "?"}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold">{email || "Sessão ativa"}</p>
-              <p className={`text-xs ${tema.muted}`}>{papel}</p>
+              <p className={`truncate text-xs ${tema.muted}`}>{papel}</p>
             </div>
+            <SinoNotificacoes alinhamento="esquerda" className="shrink-0" />
           </div>
           <button
             type="button"
@@ -146,7 +154,10 @@ export default function PainelLayout({
       </aside>
 
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl space-y-6">{children}</div>
+        <div className="mx-auto max-w-7xl space-y-6">
+          <FaixaAnuncios token={token} onVerTodos={temAbaAnuncios ? () => onMudarAba("anuncios") : undefined} />
+          {children}
+        </div>
       </main>
 
       {alterarSenhaAberto && <ModalAlterarSenha onFechar={() => setAlterarSenhaAberto(false)} />}
