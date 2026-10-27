@@ -6,7 +6,8 @@ import Icone from "../ui/Icone";
 
 // Sino com o contador de por ler e o painel das notificações pessoais.
 // `alinhamento` escolhe para que lado o painel abre (a barra lateral está à esquerda; o cabeçalho móvel, à direita).
-export default function SinoNotificacoes({ alinhamento = "direita", className = "" }) {
+// `onAbrir(notificacao)` é chamado ao clicar numa notificação, depois de a marcar como lida.
+export default function SinoNotificacoes({ alinhamento = "direita", className = "", onAbrir }) {
   const tema = useTheme();
   const { porLer, notificacoes, temMais, carregando, carregada, ligado, carregarMais, marcarLida, marcarTodas } =
     useNotificacoes();
@@ -103,7 +104,10 @@ export default function SinoNotificacoes({ alinhamento = "direita", className = 
                 <li key={n.id} className={tema.border}>
                   <button
                     type="button"
-                    onClick={() => marcarLida(n.id)}
+                    onClick={() => {
+                      marcarLida(n.id);
+                      if (onAbrir?.(n)) setAberto(false);
+                    }}
                     className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${tema.hover} ${
                       n.readAt ? "" : tema.cardMuted
                     }`}

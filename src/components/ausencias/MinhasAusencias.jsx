@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import {
   ESTADOS_AUSENCIA,
   TIPOS_AUSENCIA,
+  apagarDocumento,
   cancelarAusencia,
+  enviarDocumento,
   listarMinhasAusencias,
   obterResumoAusencias,
   pedirAusencia,
@@ -13,9 +15,14 @@ import { formatarIntervalo, isoLocal } from "../../utils/formatar";
 import Alerta from "../ui/Alerta";
 import Campo from "../ui/Campo";
 import CartaoMetrica from "../ui/CartaoMetrica";
+import Ficheiros from "../ui/Ficheiros";
+import { LIMITES_FICHEIRO, validarFicheiro } from "../../services/api";
 import { corDoEstado } from "./estiloAusencia";
 
 const pedidoVazio = () => ({ type: "vacation", startDate: isoLocal(new Date()), endDate: isoLocal(new Date()), note: "" });
+
+// Os documentos (justificações) só se mexem enquanto o pedido está pendente ou aprovado.
+const documentosAbertos = (a) => a.status === "pending" || a.status === "approved";
 
 // Pode cancelar: um pendente, ou um aprovado que ainda não começou.
 const podeCancelar = (a) => a.status === "pending" || (a.status === "approved" && a.startDate > isoLocal(new Date()));
@@ -35,6 +42,10 @@ export default function MinhasAusencias({ token, userId }) {
   const [aCancelar, setACancelar] = useState(null);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
+  const [porEnviar, setPorEnviar] = useState([]); // justificações escolhidas no pedido novo, enviadas depois de o criar
+
+  const atualizarDocumentos = (id, fn) =>
+    setPedidos((atuais) => atuais.map((a) => (a.id === id ? { ...a, documents: fn(a.documents || []) } : a)));
 
   useEffect(() => {
     if (!userId) return;
@@ -79,9 +90,24 @@ export default function MinhasAusencias({ token, userId }) {
         },
         token,
       );
+      // O pedido já existe: um documento que falhe não o desfaz, só se avisa.
+      const falhas = [];
+      for (const ficheiro of porEnviar) {
+        try {
+          await enviarDocumento(criado.id, ficheiro, token);
+        } catch (err) {
+          falhas.push(`${ficheiro.name}: ${err.message}`);
+        }
+      }
+      // Uma baixa fica aprovada logo (o back aprova-a sozinho); o resto fica pendente.
+      const dias = `${criado?.workingDays ?? "?"} ${criado?.workingDays === 1 ? "dia útil" : "dias úteis"}`;
       setSucesso(
-        `Pedido enviado (${criado?.workingDays ?? "?"} ${criado?.workingDays === 1 ? "dia útil" : "dias úteis"}). Fica pendente até ser aprovado.`,
+        (criado?.status === "approved"
+          ? `Baixa registada e aprovada automaticamente (${dias}).${porEnviar.length ? "" : " Junte o atestado quando o tiver."}`
+          : `Pedido enviado (${dias}). Fica pendente até ser aprovado.`) +
+          (falhas.length ? ` Não foi possível juntar: ${falhas.join("; ")}` : ""),
       );
+      setPorEnviar([]);
       setForm(pedidoVazio());
       setFormAberto(false);
       recarregar();
@@ -173,9 +199,46 @@ export default function MinhasAusencias({ token, userId }) {
               disabled={aGuardar}
             />
           </div>
+          <div className="space-y-2">
+            <p className={`text-xs font-semibold ${tema.label}`}>Justificação (opcional, ex.: atestado médico)</p>
+            {porEnviar.length > 0 && (
+              <ul className={`divide-y rounded-xl border text-xs ${tema.border}`}>
+                {porEnviar.map((f, i) => (
+                  <li key={`${f.name}-${i}`} className={`flex items-center justify-between gap-2 px-3 py-2 ${tema.border}`}>
+                    <span className="truncate">{f.name}</span>
+                    <button type="button" onClick={() => setPorEnviar((l) => l.filter((_, j) => j !== i))} className="shrink-0 font-semibold text-red-500 hover:underline">
+                      Tirar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <label className={`inline-flex cursor-pointer items-center rounded-lg border px-3 py-1.5 text-xs font-semibold ${tema.secondaryBtn} ${porEnviar.length >= 5 ? "pointer-events-none opacity-50" : ""}`}>
+              Escolher ficheiros
+              <input
+                type="file"
+                multiple
+                accept={LIMITES_FICHEIRO.documento.tipos}
+                disabled={aGuardar}
+                className="sr-only"
+                onChange={(e) => {
+                  const escolhidos = [...(e.target.files || [])];
+                  e.target.value = "";
+                  const invalido = escolhidos.map((f) => validarFicheiro(f, LIMITES_FICHEIRO.documento)).find(Boolean);
+                  if (invalido) {
+                    setErro(invalido);
+                    return;
+                  }
+                  setErro("");
+                  setPorEnviar((l) => [...l, ...escolhidos].slice(0, 5));
+                }}
+              />
+            </label>
+            <p className={`text-[11px] ${tema.muted}`}>{LIMITES_FICHEIRO.documento.descricao}, até 5. Só a administração os vê.</p>
+          </div>
           <p className={`text-xs ${tema.muted}`}>
             Contam só os dias úteis: fins de semana e feriados ficam de fora. As férias não podem começar no passado; uma
-            baixa pode ser registada depois.
+            baixa pode ser registada depois{form.type === "sick" ? " e fica aprovada logo — junte o atestado" : ""}.
           </p>
           <div className="flex justify-end gap-2">
             <button
@@ -223,6 +286,24 @@ export default function MinhasAusencias({ token, userId }) {
                   )}
                 </div>
               </div>
+              {(a.documents?.length > 0 || documentosAbertos(a)) && (
+                <div className={`mt-3 border-t pt-3 ${tema.border}`}>
+                  <p className={`mb-1.5 text-xs font-semibold ${tema.muted}`}>Documentos</p>
+                  <Ficheiros
+                    ficheiros={a.documents || []}
+                    podeAlterar={documentosAbertos(a)}
+                    rotulo="Juntar documento"
+                    onEnviar={async (ficheiro) => {
+                      const novo = await enviarDocumento(a.id, ficheiro, token);
+                      atualizarDocumentos(a.id, (docs) => [...docs, novo]);
+                    }}
+                    onApagar={async (ficheiro) => {
+                      await apagarDocumento(a.id, ficheiro.id, token);
+                      atualizarDocumentos(a.id, (docs) => docs.filter((d) => d.id !== ficheiro.id));
+                    }}
+                  />
+                </div>
+              )}
               {aCancelar === a.id && (
                 <div className={`mt-3 flex flex-col gap-2 border-t pt-3 sm:flex-row sm:items-center sm:justify-between ${tema.border}`}>
                   <span className={`text-xs ${tema.muted}`}>Cancelar este pedido? Para mudar as datas, cancele e peça de novo.</span>
