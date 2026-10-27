@@ -6,6 +6,7 @@ import { authService } from "../services/authservice";
 import PagLogin from "../pages/PagLogin";
 import PagAtivacao from "../pages/PagAtivacao";
 import PagRedefinirSenha from "../pages/PagRedefinirSenha";
+import PagInicio from "../pages/PagInicio";
 import { useTheme } from "../theme/tema";
 import NotificacoesProvider from "../notificacoes/NotificacoesProvider";
 
@@ -23,6 +24,19 @@ export default function AppRoutes() {
   // Se havia uma sessão guardada, confirma no servidor (GET /auth/me) antes de mostrar o painel:
   // a conta pode ter sido suspensa ou o token pode ter expirado desde o último acesso.
   const [sessaoValidada, setSessaoValidada] = useState(() => !usuario);
+  // Sem sessão: "/" mostra a página pública e "/entrar" o login.
+  const [caminho, setCaminho] = useState(() => window.location.pathname);
+
+  useEffect(() => {
+    const aoNavegar = () => setCaminho(window.location.pathname);
+    window.addEventListener("popstate", aoNavegar);
+    return () => window.removeEventListener("popstate", aoNavegar);
+  }, []);
+
+  const irPara = (destino) => {
+    if (window.location.pathname !== destino) window.history.pushState(null, "", destino);
+    setCaminho(destino);
+  };
   const tema = useTheme();
 
   useEffect(() => {
@@ -73,11 +87,16 @@ export default function AppRoutes() {
 
   // O authService.login já guarda o token e a sessão no localStorage.
   const handleLogin = (dadosUsuario) => {
+    // Os painéis vivem em "/": o /entrar deixa de fazer sentido depois do login.
+    window.history.replaceState(null, "", "/");
+    setCaminho("/");
     setUsuario(dadosUsuario);
   };
 
   const handleLogout = () => {
     authService.logout();
+    window.history.replaceState(null, "", "/entrar");
+    setCaminho("/entrar");
     setUsuario(null);
   };
 
@@ -91,7 +110,7 @@ export default function AppRoutes() {
   }
 
   if (!usuario) {
-    return <PagLogin onLogin={handleLogin} />;
+    return caminho === "/entrar" ? <PagLogin onLogin={handleLogin} /> : <PagInicio onEntrar={() => irPara("/entrar")} />;
   }
 
   // 4. Redirecionamento por cargo (Multi-tenant). O NotificacoesProvider mantém o sino e o stream em tempo real.

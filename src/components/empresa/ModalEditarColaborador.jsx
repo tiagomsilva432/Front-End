@@ -6,6 +6,7 @@ import Alerta from "../ui/Alerta";
 import Campo from "../ui/Campo";
 import Modal from "../ui/Modal";
 import AcoesEstadoConta from "../conta/AcoesEstadoConta";
+import FotoPerfil from "../conta/FotoPerfil";
 
 const CAMPOS = [
   ["firstName", "Primeiro nome", "text", true],
@@ -15,7 +16,7 @@ const CAMPOS = [
   ["hireDate", "Data de admissão", "date", true],
   ["birthDate", "Data de nascimento", "date", false],
 ];
-const OPCIONAIS = ["phone", "address", "birthDate", "jobTitle", "avatarUrl"];
+const OPCIONAIS = ["phone", "address", "birthDate", "jobTitle"];
 
 export default function ModalEditarColaborador({ colaborador, token, onFechar, onGuardado, onEstadoAlterado }) {
   const tema = useTheme();
@@ -29,10 +30,10 @@ export default function ModalEditarColaborador({ colaborador, token, onFechar, o
       address: atual.address || "",
       birthDate: atual.birthDate || "",
       jobTitle: atual.jobTitle || "",
-      avatarUrl: atual.avatarUrl || "",
     };
   });
   const [erro, setErro] = useState("");
+  const [fotoAtual, setFotoAtual] = useState(colaborador.profile?.avatarUrl || null);
   const [aGuardar, setAGuardar] = useState(false);
 
   const alterar = (campo) => (e) => setPerfil((atual) => ({ ...atual, [campo]: e.target.value }));
@@ -61,6 +62,19 @@ export default function ModalEditarColaborador({ colaborador, token, onFechar, o
   return (
     <Modal id="editar-colaborador" titulo="Editar colaborador" subtitulo={colaborador.email} onFechar={onFechar} bloqueado={aGuardar}>
       {erro && <Alerta className="mb-4">{erro}</Alerta>}
+
+      <div className={`mb-5 border-b pb-5 ${tema.border}`}>
+        <FotoPerfil
+          userId={colaborador.id}
+          url={fotoAtual}
+          nome={colaborador.profile?.firstName || colaborador.email}
+          token={token}
+          onAlterada={(url) => {
+            setFotoAtual(url);
+            onEstadoAlterado?.();
+          }}
+        />
+      </div>
 
       <form onSubmit={guardar} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">

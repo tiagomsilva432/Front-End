@@ -1,4 +1,4 @@
-import { apiRequest, dadosResposta } from "./api";
+import { apiRequest, dadosResposta, enviarFicheiro } from "./api";
 
 export const listarUsers = async ({ companyId, role, status } = {}, token) => {
   const parametros = new URLSearchParams();
@@ -36,3 +36,8 @@ export const alterarEstadoUser = async (userId, status, token) => {
   });
   return dadosResposta(resultado);
 };
+
+// Avatar (JPG, PNG ou WebP, até 5 MB). O servidor corta-o num quadrado de 512x512; substitui o anterior.
+export const enviarAvatar = (userId, ficheiro, token) => enviarFicheiro(`/users/${userId}/avatar`, ficheiro, { method: "PUT", token });
+
+export const apagarAvatar = (userId, token) => apiRequest(`/users/${userId}/avatar`, { method: "DELETE", token });

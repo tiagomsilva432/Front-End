@@ -1,4 +1,4 @@
-import { apiRequest, dadosResposta } from "./api";
+import { apiRequest, dadosResposta, enviarFicheiro } from "./api";
 
 export const TIPOS_AUSENCIA = { vacation: "Férias", sick: "Baixa médica", leave: "Outra ausência", absent: "Ausente" };
 export const ESTADOS_AUSENCIA = { pending: "Pendente", approved: "Aprovada", rejected: "Recusada", cancelled: "Cancelada" };
@@ -37,3 +37,9 @@ export const cancelarAusencia = (id, motivo, token) =>
 // Dias úteis de ausências aprovadas num ano, por tipo.
 export const obterResumoAusencias = (userId, ano, token) =>
   apiRequest(`/users/${userId}/absence-summary${filtro({ year: ano })}`, { token }).then(dadosResposta);
+
+// Documentos (justificações) de uma ausência pendente ou aprovada: JPG, PNG, WebP ou PDF, até 10 MB, até 5.
+export const enviarDocumento = (absenceId, ficheiro, token) => enviarFicheiro(`/absences/${absenceId}/documents`, ficheiro, { token });
+
+export const apagarDocumento = (absenceId, fileId, token) =>
+  apiRequest(`/absences/${absenceId}/documents/${fileId}`, { method: "DELETE", token });

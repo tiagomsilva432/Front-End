@@ -2,7 +2,7 @@ import { useTheme } from "../../theme/tema";
 import { ESTADOS_PROJETO, formatarData, formatarEuros, idDe, nomeCompleto } from "../../utils/formatar";
 import Icone from "../ui/Icone";
 
-export default function ListaProjetos({ projetos, pessoas = [], carregando, onNovo, onVerEquipa, onEditar }) {
+export default function ListaProjetos({ projetos, pessoas = [], carregando, onNovo, onVerEquipa, onFinancas, onEditar }) {
   const tema = useTheme();
   const pessoaPorId = new Map(pessoas.map((p) => [idDe(p), p]));
   const nomeGestor = (managerId) => {
@@ -60,7 +60,7 @@ export default function ListaProjetos({ projetos, pessoas = [], carregando, onNo
                   <dd className={`font-semibold ${tema.accent}`}>{formatarEuros(proj.budget)}</dd>
                 </div>
               </dl>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => onVerEquipa(proj)}
@@ -68,6 +68,14 @@ export default function ListaProjetos({ projetos, pessoas = [], carregando, onNo
                 >
                   <Icone nome="pessoas" className="h-4 w-4" />
                   Ver equipa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onFinancas(proj)}
+                  className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-semibold transition ${tema.secondaryBtn}`}
+                >
+                  <Icone nome="moeda" className="h-4 w-4" />
+                  Finanças
                 </button>
                 <button
                   type="button"

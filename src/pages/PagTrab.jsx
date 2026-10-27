@@ -10,6 +10,8 @@ import CaixaAvaliacoes from "../components/avaliacoes/CaixaAvaliacoes";
 import PaginaAnuncios from "../components/anuncios/PaginaAnuncios";
 import MinhasAusencias from "../components/ausencias/MinhasAusencias";
 import CalendarioMes from "../components/calendario/CalendarioMes";
+import FinancasProjeto from "../components/financas/FinancasProjeto";
+import FotoPerfil from "../components/conta/FotoPerfil";
 import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
 import Alerta from "../components/ui/Alerta";
@@ -56,6 +58,14 @@ export default function FuncHome({ Usuario, onLogout }) {
 
   const [projetosEmpresa, setProjetosEmpresa] = useState([]);
   const { versaoDados } = useNotificacoes();
+  const [projetoFinancas, setProjetoFinancas] = useState(null);
+
+  // A notificação de orçamento (80% / 100%) abre as finanças do projeto que gere.
+  const abrirNotificacao = (n) => {
+    if (n.type !== "project.budget_threshold" || !n.data?.projectId) return false;
+    setProjetoFinancas({ id: n.data.projectId, name: n.data.projectName });
+    return true;
+  };
 
   const [competencias, setCompetencias] = useState({ carregando: Boolean(userId), lista: [], erro: "" });
   const [salario, setSalario] = useState({ carregando: Boolean(userId), historico: [], atual: null, erro: "" });
@@ -181,7 +191,9 @@ export default function FuncHome({ Usuario, onLogout }) {
       onMudarAba={setAbaAtiva}
       email={email}
       papel={cargo}
+      avatarUrl={perfil?.avatarUrl}
       onLogout={onLogout}
+      onAbrirNotificacao={abrirNotificacao}
     >
       <header>
         <p className={`text-xs font-semibold uppercase tracking-widest ${tema.muted}`}>Espaço pessoal</p>
@@ -251,8 +263,31 @@ export default function FuncHome({ Usuario, onLogout }) {
           {alertaAlocacoes}
           {avisoSobrealocacao}
           <ListaAlocacoes alocacoes={projetosAlocados} carregando={carregandoAlocacoes} token={token} />
+
+          {projetosGeridos.length > 0 && (
+            <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
+              <h3 className="font-semibold">Projetos que gere</h3>
+              <p className={`mt-1 text-xs ${tema.muted}`}>Como gestor, regista as despesas do projeto e acompanha o orçamento.</p>
+              <ul className={`mt-4 divide-y rounded-xl border ${tema.border}`}>
+                {projetosGeridos.map((projeto) => (
+                  <li key={idDe(projeto)} className={`flex items-center justify-between gap-3 px-4 py-3 text-sm ${tema.border}`}>
+                    <span className="min-w-0 truncate font-medium">{projeto.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setProjetoFinancas({ id: idDe(projeto), name: projeto.name })}
+                      className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold ${tema.secondaryBtn}`}
+                    >
+                      Finanças e despesas
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       )}
+
+      {projetoFinancas && <FinancasProjeto projeto={projetoFinancas} token={token} onFechar={() => setProjetoFinancas(null)} />}
 
       {abaAtiva === "avaliacoes" && <CaixaAvaliacoes token={token} />}
 
@@ -272,6 +307,20 @@ export default function FuncHome({ Usuario, onLogout }) {
               Dados pessoais registados pela empresa. Para alterar algum dado, contacte o administrador.
             </p>
           </div>
+          {userId && (
+            <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
+              <h3 className="mb-4 font-semibold">Foto de perfil</h3>
+              <FotoPerfil
+                userId={userId}
+                url={perfil?.avatarUrl}
+                nome={perfil?.firstName || email}
+                token={token}
+                onAlterada={(url) =>
+                  setDadosConta((conta) => (conta ? { ...conta, profile: { ...(conta.profile || {}), avatarUrl: url } } : conta))
+                }
+              />
+            </section>
+          )}
           <ListaDados
             titulo="Dados da conta"
             campos={[
