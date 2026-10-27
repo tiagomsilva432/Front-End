@@ -10,11 +10,13 @@ import ResumoEmpresa from "../components/admin/ResumoEmpresa";
 import ModalCriarEmpresa from "../components/admin/ModalCriarEmpresa";
 import ModalConvidarAdmin from "../components/admin/ModalConvidarAdmin";
 import CatalogoCompetencias from "../components/competencias/CatalogoCompetencias";
+import PaginaAnuncios from "../components/anuncios/PaginaAnuncios";
 import { useTheme } from "../theme/tema";
 
 const MENU = [
   { id: "empresas", label: "Empresas", icone: "empresa" },
   { id: "competencias", label: "Competências", icone: "estrela" },
+  { id: "anuncios", label: "Anúncios", icone: "megafone" },
 ];
 
 export default function PainelGeralAdmin({ Usuario, onLogout }) {
@@ -99,6 +101,8 @@ export default function PainelGeralAdmin({ Usuario, onLogout }) {
     >
       {abaAtiva === "competencias" ? (
         <CatalogoCompetencias token={token} podeEditar />
+      ) : abaAtiva === "anuncios" ? (
+        <PaginaAnuncios token={token} ambitos={["system", "company"]} empresas={companias} />
       ) : companiaSelecionada ? (
         <ResumoEmpresa
           empresa={companiaSelecionada}

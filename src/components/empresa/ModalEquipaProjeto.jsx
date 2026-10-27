@@ -4,6 +4,8 @@ import { useTheme } from "../../theme/tema";
 import { alocacaoEmCurso, formatarData, idDe, nomeCompleto } from "../../utils/formatar";
 import Alerta from "../ui/Alerta";
 import Modal from "../ui/Modal";
+import AnunciosProjeto from "../anuncios/AnunciosProjeto";
+import AusenciasProjeto from "../calendario/AusenciasProjeto";
 
 // Quem trabalha num projeto (GET /projects/:id/allocations).
 export default function ModalEquipaProjeto({ projeto, colaboradores, token, onFechar }) {
@@ -109,8 +111,18 @@ export default function ModalEquipaProjeto({ projeto, colaboradores, token, onFe
           </details>
         )}
 
+        <div className={`border-t pt-5 ${tema.border}`}>
+          <h3 className="mb-3 text-sm font-semibold">Ausências da equipa</h3>
+          <AusenciasProjeto projectId={idDe(projeto)} pessoas={colaboradores} token={token} />
+        </div>
+
+        <div className={`border-t pt-5 ${tema.border}`}>
+          <h3 className="mb-3 text-sm font-semibold">Anúncios do projeto</h3>
+          <AnunciosProjeto projectId={idDe(projeto)} token={token} />
+        </div>
+
         <p className={`text-xs ${tema.muted}`}>
-          Para alocar alguém, abra as alocações da pessoa no diretório de colaboradores.
+          Para alocar alguém, abra as alocações da pessoa no diretório de colaboradores. Os anúncios publicam-se na aba Anúncios.
         </p>
       </div>
     </Modal>

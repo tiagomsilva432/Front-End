@@ -24,6 +24,10 @@ import CatalogoCompetencias from "../components/competencias/CatalogoCompetencia
 import GestaoAvaliacoes from "../components/avaliacoes/GestaoAvaliacoes";
 import CaixaAvaliacoes from "../components/avaliacoes/CaixaAvaliacoes";
 import ResultadosPorPessoa from "../components/avaliacoes/ResultadosPorPessoa";
+import PaginaAnuncios from "../components/anuncios/PaginaAnuncios";
+import DecidirAusencias from "../components/ausencias/DecidirAusencias";
+import MinhasAusencias from "../components/ausencias/MinhasAusencias";
+import CalendarioMes from "../components/calendario/CalendarioMes";
 import { useTheme } from "../theme/tema";
 
 const MENU = [
@@ -31,7 +35,10 @@ const MENU = [
   { id: "pessoas", label: "Colaboradores", icone: "pessoas" },
   { id: "projetos", label: "Projetos", icone: "pasta" },
   { id: "competencias", label: "Competências", icone: "estrela" },
+  { id: "ausencias", label: "Ausências", icone: "relogio" },
+  { id: "calendario", label: "Calendário", icone: "calendario" },
   { id: "avaliacoes", label: "Avaliações", icone: "avaliacao" },
+  { id: "anuncios", label: "Anúncios", icone: "megafone" },
   { id: "empresa", label: "Empresa", icone: "empresa" },
 ];
 
@@ -62,6 +69,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
   const [colaboradorCompetencias, setColaboradorCompetencias] = useState(null);
   const [colaboradorSalario, setColaboradorSalario] = useState(null);
   const [vistaAvaliacoes, setVistaAvaliacoes] = useState("ciclos");
+  const [vistaAusencias, setVistaAusencias] = useState("decidir");
   const [projetos, setProjetos] = useState([]);
   const [carregando, setCarregando] = useState(() => Boolean(companyId));
   const [erroBackend, setErroBackend] = useState(null);
@@ -225,6 +233,36 @@ export default function AdmCompHome({ Usuario, onLogout }) {
           )}
         </div>
       )}
+
+      {abaAtiva === "ausencias" && (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {[
+              ["decidir", "Pedidos da equipa"],
+              ["meus", "As minhas ausências"],
+            ].map(([valor, rotulo]) => (
+              <button
+                key={valor}
+                type="button"
+                aria-pressed={vistaAusencias === valor}
+                onClick={() => setVistaAusencias(valor)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${vistaAusencias === valor ? tema.active : tema.secondaryBtn}`}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+          {vistaAusencias === "decidir" ? (
+            <DecidirAusencias token={token} pessoas={pessoas} meuId={Usuario?.id} />
+          ) : (
+            <MinhasAusencias token={token} userId={Usuario?.id} />
+          )}
+        </div>
+      )}
+
+      {abaAtiva === "calendario" && <CalendarioMes token={token} pessoas={pessoas} podeGerirFeriados />}
+
+      {abaAtiva === "anuncios" && <PaginaAnuncios token={token} ambitos={["company", "project"]} projetos={projetos} />}
 
       {abaAtiva === "competencias" && <CatalogoCompetencias token={token} pessoas={pessoas} />}
 
