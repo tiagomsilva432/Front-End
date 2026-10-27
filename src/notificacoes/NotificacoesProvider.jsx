@@ -7,6 +7,7 @@ import {
   pedirBilheteStream,
   urlStream,
 } from "../services/notificationservice";
+import { contarMensagensPorLer } from "../services/messageservice";
 import { NotificacoesContext } from "./notificacoes";
 
 const ESPERA_RECONEXAO_MS = 3000;
@@ -26,6 +27,31 @@ export default function NotificacoesProvider({ token, onSessaoTerminada, childre
   // Sobe quando chega uma notificação que muda alocações, projetos ou ausências de quem tem a sessão.
   const [versaoDados, setVersaoDados] = useState(0);
   const sessaoTerminada = useRef(onSessaoTerminada);
+  // Mensagens por ler nos chats dos projetos: { total, porProjeto: { [projectId]: n } }.
+  const [chatPorLer, setChatPorLer] = useState({ total: 0, porProjeto: {} });
+  // Quem quer saber de um evento do stream (project_message, project_task, project_task_comment) regista-se aqui.
+  const ouvintes = useRef(new Map());
+
+  const emitir = useCallback((evento, dados) => {
+    for (const fn of ouvintes.current.get(evento) || []) fn(dados);
+  }, []);
+
+  // ouvir("project_task", fn) -> devolve a função para deixar de ouvir (para usar no cleanup de um useEffect).
+  const ouvir = useCallback((evento, fn) => {
+    if (!ouvintes.current.has(evento)) ouvintes.current.set(evento, new Set());
+    ouvintes.current.get(evento).add(fn);
+    return () => ouvintes.current.get(evento)?.delete(fn);
+  }, []);
+
+  const atualizarChatPorLer = useCallback(async () => {
+    if (!token) return;
+    try {
+      const r = await contarMensagensPorLer(token);
+      setChatPorLer({ total: r?.total ?? 0, porProjeto: Object.fromEntries((r?.projects || []).map((x) => [x.projectId, x.unread])) });
+    } catch (err) {
+      console.error("Erro ao contar as mensagens por ler:", err);
+    }
+  }, [token]);
 
   useEffect(() => {
     sessaoTerminada.current = onSessaoTerminada;
@@ -51,7 +77,8 @@ export default function NotificacoesProvider({ token, onSessaoTerminada, childre
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial a partir do servidor
     sincronizar();
-  }, [sincronizar]);
+    atualizarChatPorLer();
+  }, [sincronizar, atualizarChatPorLer]);
 
   // Stream em tempo real (Server-Sent Events).
   useEffect(() => {
@@ -85,6 +112,7 @@ export default function NotificacoesProvider({ token, onSessaoTerminada, childre
           }
           // Pode ter chegado algo enquanto estava desligado.
           sincronizar();
+          atualizarChatPorLer();
           setVersaoAnuncios((n) => n + 1);
         });
 
@@ -96,6 +124,18 @@ export default function NotificacoesProvider({ token, onSessaoTerminada, childre
         });
 
         fonte.addEventListener("announcement", () => setVersaoAnuncios((n) => n + 1));
+
+        // Chat e quadro dos projetos: não são notificações, só se avisa quem está a ver.
+        for (const evento of ["project_message", "project_task", "project_task_comment"]) {
+          fonte.addEventListener(evento, (e) => {
+            try {
+              emitir(evento, JSON.parse(e.data));
+            } catch (err) {
+              console.error(`Evento ${evento} inválido:`, err);
+            }
+            if (evento === "project_message") atualizarChatPorLer();
+          });
+        }
 
         fonte.addEventListener("close", (e) => {
           fonte.close();
@@ -134,7 +174,7 @@ export default function NotificacoesProvider({ token, onSessaoTerminada, childre
       clearTimeout(temporizador);
       fonte?.close();
     };
-  }, [token, sincronizar]);
+  }, [token, sincronizar, emitir, atualizarChatPorLer]);
 
   const carregarMais = useCallback(async () => {
     if (!proxima || carregando) return;
@@ -193,8 +233,11 @@ export default function NotificacoesProvider({ token, onSessaoTerminada, childre
       marcarLida,
       marcarTodas,
       anunciosAlterados: () => setVersaoAnuncios((n) => n + 1),
+      chatPorLer,
+      atualizarChatPorLer,
+      ouvir,
     }),
-    [porLer, notificacoes, proxima, carregando, carregada, ligado, versaoAnuncios, versaoDados, sincronizar, carregarMais, marcarLida, marcarTodas],
+    [porLer, notificacoes, proxima, carregando, carregada, ligado, versaoAnuncios, versaoDados, sincronizar, carregarMais, marcarLida, marcarTodas, chatPorLer, atualizarChatPorLer, ouvir],
   );
 
   return <NotificacoesContext.Provider value={valor}>{children}</NotificacoesContext.Provider>;

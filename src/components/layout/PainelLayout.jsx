@@ -46,7 +46,13 @@ export default function PainelLayout({
         }`}
       >
         <Icone nome={item.icone} className="h-5 w-5 shrink-0" />
-        <span>{item.label}</span>
+        <span className="flex-1">{item.label}</span>
+        {item.contador > 0 && (
+          <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
+            {item.contador > 99 ? "99+" : item.contador}
+            <span className="sr-only"> por ler</span>
+          </span>
+        )}
       </button>
     );
   };

@@ -4,7 +4,7 @@ import AnunciosProjeto from "../anuncios/AnunciosProjeto";
 
 // Lista das alocações do colaborador. `resumida` mostra linhas compactas (visão geral); caso contrário, cartões completos
 // (com os anúncios ativos de cada projeto, se houver `token`).
-export default function ListaAlocacoes({ alocacoes, carregando, resumida = false, token }) {
+export default function ListaAlocacoes({ alocacoes, carregando, resumida = false, token, onAbrir, porLer = {} }) {
   const tema = useTheme();
 
   if (carregando || alocacoes.length === 0) {
@@ -44,6 +44,18 @@ export default function ListaAlocacoes({ alocacoes, carregando, resumida = false
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="break-words text-base font-bold">{alocacao.projeto?.name || "Projeto"}</h3>
+              {onAbrir && alocacao.projeto && (
+                <button
+                  type="button"
+                  onClick={() => onAbrir(alocacao.projeto)}
+                  className={`mt-2 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold ${tema.primaryBtn}`}
+                >
+                  Abrir projeto
+                  {porLer[alocacao.projectId] > 0 && (
+                    <span className="rounded-full bg-red-600 px-1.5 text-[10px] text-white">{porLer[alocacao.projectId]}</span>
+                  )}
+                </button>
+              )}
               <p className={`mt-1 text-sm ${tema.muted}`}>{alocacao.projeto?.clientName || "Cliente não indicado"}</p>
             </div>
             <span className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-sm font-bold ${tema.active}`}>

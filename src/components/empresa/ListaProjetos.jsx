@@ -2,7 +2,7 @@ import { useTheme } from "../../theme/tema";
 import { ESTADOS_PROJETO, formatarData, formatarEuros, idDe, nomeCompleto } from "../../utils/formatar";
 import Icone from "../ui/Icone";
 
-export default function ListaProjetos({ projetos, pessoas = [], carregando, onNovo, onVerEquipa, onFinancas, onEditar }) {
+export default function ListaProjetos({ projetos, pessoas = [], carregando, onNovo, onAbrir, onVerEquipa, onFinancas, onEditar, porLer = {} }) {
   const tema = useTheme();
   const pessoaPorId = new Map(pessoas.map((p) => [idDe(p), p]));
   const nomeGestor = (managerId) => {
@@ -37,7 +37,11 @@ export default function ListaProjetos({ projetos, pessoas = [], carregando, onNo
           {projetos.map((proj) => (
             <article key={idDe(proj)} className={`space-y-4 rounded-2xl border p-6 ${tema.card}`}>
               <div className="flex items-start justify-between gap-3">
-                <h3 className="min-w-0 break-words text-base font-bold">{proj.name}</h3>
+                <h3 className="min-w-0 break-words text-base font-bold">
+                  <button type="button" onClick={() => onAbrir(proj)} className="text-left hover:underline">
+                    {proj.name}
+                  </button>
+                </h3>
                 <span className={`shrink-0 rounded border px-2.5 py-1 text-[10px] font-bold ${tema.active}`}>
                   {ESTADOS_PROJETO[proj.status] || proj.status || "—"}
                 </span>
@@ -60,6 +64,16 @@ export default function ListaProjetos({ projetos, pessoas = [], carregando, onNo
                   <dd className={`font-semibold ${tema.accent}`}>{formatarEuros(proj.budget)}</dd>
                 </div>
               </dl>
+              <button
+                type="button"
+                onClick={() => onAbrir(proj)}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold shadow-md transition ${tema.primaryBtn}`}
+              >
+                Abrir projeto · quadro, chat e recursos
+                {porLer[idDe(proj)] > 0 && (
+                  <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] text-white">{porLer[idDe(proj)]} por ler</span>
+                )}
+              </button>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
