@@ -3,14 +3,13 @@ import { LIMITES_FICHEIRO, validarFicheiro } from "../../services/api";
 import { useTheme } from "../../theme/tema";
 import Alerta from "./Alerta";
 
-const MAXIMO = 5;
-
 const tamanho = (bytes) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toLocaleString("pt-PT", { maximumFractionDigits: 1 })} MB`);
 
 // Lista de ficheiros de um recurso (recibos de uma despesa, documentos de uma ausência), com anexar e remover.
 // Os links (`url`) vêm do servidor e expiram em 1-2 horas: usam-se tal como vêm, nunca se guardam.
 // `onEnviar(ficheiro)` e `onApagar(ficheiro)` devolvem promessas; `podeAlterar` esconde os botões.
-export default function Ficheiros({ ficheiros = [], onEnviar, onApagar, podeAlterar = true, rotulo = "Anexar ficheiro", avisoDuplicado }) {
+// `maximo` = 1 quer dizer "um só, que o próximo substitui" (ex.: o ficheiro de um recurso).
+export default function Ficheiros({ ficheiros = [], onEnviar, onApagar, podeAlterar = true, rotulo = "Anexar ficheiro", avisoDuplicado, maximo = 5 }) {
   const tema = useTheme();
   const entrada = useRef(null);
   const [aEnviar, setAEnviar] = useState(false);
@@ -49,7 +48,7 @@ export default function Ficheiros({ ficheiros = [], onEnviar, onApagar, podeAlte
     }
   };
 
-  const cheio = ficheiros.length >= MAXIMO;
+  const cheio = maximo > 1 && ficheiros.length >= maximo;
 
   return (
     <div className="space-y-2">
@@ -101,7 +100,11 @@ export default function Ficheiros({ ficheiros = [], onEnviar, onApagar, podeAlte
             {aEnviar ? "A enviar…" : rotulo}
           </button>
           <span className={`text-[11px] ${tema.muted}`}>
-            {cheio ? `Já tem o máximo de ${MAXIMO}.` : `${LIMITES_FICHEIRO.documento.descricao}, até ${MAXIMO}.`}
+            {cheio
+              ? `Já tem o máximo de ${maximo}.`
+              : maximo === 1
+                ? `${LIMITES_FICHEIRO.documento.descricao}. Um só: enviar outro substitui-o.`
+                : `${LIMITES_FICHEIRO.documento.descricao}, até ${maximo}.`}
           </span>
         </div>
       )}

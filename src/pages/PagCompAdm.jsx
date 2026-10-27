@@ -30,6 +30,8 @@ import CalendarioMes from "../components/calendario/CalendarioMes";
 import PainelFinancas from "../components/financas/PainelFinancas";
 import FinancasProjeto from "../components/financas/FinancasProjeto";
 import VisaoGeral from "../components/empresa/VisaoGeral";
+import EspacoProjeto from "../components/projeto/EspacoProjeto";
+import { useNotificacoes } from "../notificacoes/notificacoes";
 import { useTheme } from "../theme/tema";
 
 const MENU = [
@@ -79,7 +81,20 @@ export default function AdmCompHome({ Usuario, onLogout }) {
 
   // Notificações que levam a um sítio: orçamento (80% / 100%) -> finanças do projeto;
   // ausência pedida, baixa registada ou documento novo -> o pedido, nos pedidos da equipa.
+  const { chatPorLer } = useNotificacoes();
+  const [projetoAberto, setProjetoAberto] = useState(null); // { projeto, separador, tarefaId }
+  const abrirProjeto = (projeto, separador = "quadro", tarefaId) => {
+    setProjetoAberto({ projeto, separador, tarefaId });
+    setAbaAtiva("projetos");
+  };
+
   const abrirNotificacao = (n) => {
+    // Tarefas do quadro: abre o projeto já nessa tarefa.
+    if (["task.assigned", "task.review_requested", "task.reviewed", "task.commented"].includes(n.type) && n.data?.projectId) {
+      const projeto = projetos.find((p) => p.id === n.data.projectId) || { id: n.data.projectId, name: n.data.projectName };
+      abrirProjeto(projeto, "quadro", n.data.taskId);
+      return true;
+    }
     if (n.type === "project.budget_threshold" && n.data?.projectId) {
       setProjetoFinancas({ id: n.data.projectId, name: n.data.projectName });
       return true;
@@ -136,9 +151,12 @@ export default function AdmCompHome({ Usuario, onLogout }) {
   return (
     <PainelLayout
       titulo={empresa?.name || "ERP Empresa"}
-      menuItems={MENU}
+      menuItems={MENU.map((item) => (item.id === "projetos" ? { ...item, contador: chatPorLer.total } : item))}
       abaSelecionada={ABA_DO_MENU[abaAtiva] || abaAtiva}
-      onMudarAba={setAbaAtiva}
+      onMudarAba={(aba) => {
+        setProjetoAberto(null);
+        setAbaAtiva(aba);
+      }}
       email={Usuario?.email}
       avatarUrl={pessoas.find((p) => p.id === Usuario?.id)?.profile?.avatarUrl}
       papel="Administrador da empresa"
@@ -189,8 +207,23 @@ export default function AdmCompHome({ Usuario, onLogout }) {
         </div>
       )}
 
-      {abaAtiva === "projetos" && (
+      {abaAtiva === "projetos" && projetoAberto && (
+        <EspacoProjeto
+          key={`${projetoAberto.projeto.id}-${projetoAberto.tarefaId || ""}`}
+          projeto={projetoAberto.projeto}
+          token={token}
+          eu={Usuario}
+          pessoas={pessoas}
+          separadorInicial={projetoAberto.separador}
+          tarefaInicial={projetoAberto.tarefaId}
+          onVoltar={() => setProjetoAberto(null)}
+        />
+      )}
+
+      {abaAtiva === "projetos" && !projetoAberto && (
         <ListaProjetos
+          onAbrir={(proj) => abrirProjeto(proj)}
+          porLer={chatPorLer.porProjeto}
           projetos={projetos}
           carregando={carregando}
           pessoas={pessoas}
