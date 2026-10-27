@@ -50,7 +50,7 @@ export default function PagAtivacao({ onConcluido }) {
 
   const irParaLogin = () => {
     if (onConcluido) onConcluido();
-    else window.location.href = "/";
+    else window.location.href = "/entrar";
   };
 
   return (

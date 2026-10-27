@@ -60,7 +60,7 @@ export default function PagRedefinirSenha() {
 
   const botaoPrincipal = `w-full rounded-xl py-3 text-sm font-semibold shadow-md transition disabled:opacity-50 ${tema.primaryBtn}`;
   const voltarAoLogin = (
-    <a href="/" className={`mt-6 block text-center text-xs font-semibold hover:underline ${tema.accent}`}>
+    <a href="/entrar" className={`mt-6 block text-center text-xs font-semibold hover:underline ${tema.accent}`}>
       Voltar ao login
     </a>
   );
@@ -102,7 +102,7 @@ export default function PagRedefinirSenha() {
       {concluido ? (
         <div className="space-y-4">
           <Alerta tipo="sucesso">Senha alterada com sucesso! Já pode entrar com a nova senha.</Alerta>
-          <a href="/" className={`block text-center ${botaoPrincipal}`}>
+          <a href="/entrar" className={`block text-center ${botaoPrincipal}`}>
             Ir para o login
           </a>
         </div>

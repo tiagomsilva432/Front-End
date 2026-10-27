@@ -7,7 +7,6 @@ import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
 import Alerta from "../components/ui/Alerta";
 import BotaoVoltar from "../components/ui/BotaoVoltar";
-import CartaoMetrica from "../components/ui/CartaoMetrica";
 import ListaColaboradores from "../components/empresa/ListaColaboradores";
 import ListaProjetos from "../components/empresa/ListaProjetos";
 import FormNovoColaborador from "../components/empresa/FormNovoColaborador";
@@ -28,12 +27,16 @@ import PaginaAnuncios from "../components/anuncios/PaginaAnuncios";
 import DecidirAusencias from "../components/ausencias/DecidirAusencias";
 import MinhasAusencias from "../components/ausencias/MinhasAusencias";
 import CalendarioMes from "../components/calendario/CalendarioMes";
+import PainelFinancas from "../components/financas/PainelFinancas";
+import FinancasProjeto from "../components/financas/FinancasProjeto";
+import VisaoGeral from "../components/empresa/VisaoGeral";
 import { useTheme } from "../theme/tema";
 
 const MENU = [
   { id: "overview", label: "Visão geral", icone: "painel" },
   { id: "pessoas", label: "Colaboradores", icone: "pessoas" },
   { id: "projetos", label: "Projetos", icone: "pasta" },
+  { id: "financas", label: "Finanças", icone: "moeda" },
   { id: "competencias", label: "Competências", icone: "estrela" },
   { id: "ausencias", label: "Ausências", icone: "relogio" },
   { id: "calendario", label: "Calendário", icone: "calendario" },
@@ -70,6 +73,25 @@ export default function AdmCompHome({ Usuario, onLogout }) {
   const [colaboradorSalario, setColaboradorSalario] = useState(null);
   const [vistaAvaliacoes, setVistaAvaliacoes] = useState("ciclos");
   const [vistaAusencias, setVistaAusencias] = useState("decidir");
+  const [projetoFinancas, setProjetoFinancas] = useState(null);
+
+  const [ausenciaDestacada, setAusenciaDestacada] = useState(null);
+
+  // Notificações que levam a um sítio: orçamento (80% / 100%) -> finanças do projeto;
+  // ausência pedida, baixa registada ou documento novo -> o pedido, nos pedidos da equipa.
+  const abrirNotificacao = (n) => {
+    if (n.type === "project.budget_threshold" && n.data?.projectId) {
+      setProjetoFinancas({ id: n.data.projectId, name: n.data.projectName });
+      return true;
+    }
+    if (["absence.requested", "absence.auto_approved", "absence.document_added"].includes(n.type) && n.data?.absenceId) {
+      setAusenciaDestacada(n.data.absenceId);
+      setVistaAusencias("decidir");
+      setAbaAtiva("ausencias");
+      return true;
+    }
+    return false;
+  };
   const [projetos, setProjetos] = useState([]);
   const [carregando, setCarregando] = useState(() => Boolean(companyId));
   const [erroBackend, setErroBackend] = useState(null);
@@ -110,7 +132,6 @@ export default function AdmCompHome({ Usuario, onLogout }) {
   };
 
   const colaboradores = pessoas.filter((p) => p.role === "employee");
-  const convitesPendentes = colaboradores.filter((c) => c.status === "invited").length;
 
   return (
     <PainelLayout
@@ -119,8 +140,10 @@ export default function AdmCompHome({ Usuario, onLogout }) {
       abaSelecionada={ABA_DO_MENU[abaAtiva] || abaAtiva}
       onMudarAba={setAbaAtiva}
       email={Usuario?.email}
+      avatarUrl={pessoas.find((p) => p.id === Usuario?.id)?.profile?.avatarUrl}
       papel="Administrador da empresa"
       onLogout={onLogout}
+      onAbrirNotificacao={abrirNotificacao}
     >
       {!companyId && <Alerta>Não foi possível identificar a empresa da sessão. Termine a sessão e entre novamente.</Alerta>}
       {erroBackend && (
@@ -130,29 +153,15 @@ export default function AdmCompHome({ Usuario, onLogout }) {
       )}
 
       {abaAtiva === "overview" && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold">Painel administrativo</h1>
-            <p className={`mt-1 text-xs ${tema.muted}`}>Indicadores e informação da empresa.</p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <CartaoMetrica
-              titulo="Colaboradores"
-              valor={carregando ? "…" : colaboradores.length}
-              descricao="Contas com cargo de colaborador na empresa."
-            />
-            <CartaoMetrica
-              titulo="Projetos registados"
-              valor={carregando ? "…" : projetos.length}
-              descricao="Total de projetos da empresa, em qualquer estado."
-            />
-            <CartaoMetrica
-              titulo="Convites pendentes"
-              valor={carregando ? "…" : convitesPendentes}
-              descricao="Colaboradores que ainda não ativaram a conta."
-            />
-          </div>
-        </div>
+        <VisaoGeral
+          token={token}
+          pessoas={pessoas}
+          projetos={projetos}
+          carregandoBase={carregando}
+          nome={pessoas.find((p) => p.id === Usuario?.id)?.profile?.firstName}
+          onIr={setAbaAtiva}
+          onAbrirFinancas={setProjetoFinancas}
+        />
       )}
 
       {abaAtiva === "pessoas" && (
@@ -187,6 +196,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
           pessoas={pessoas}
           onNovo={() => setAbaAtiva("criar-projeto")}
           onVerEquipa={setProjetoEquipa}
+          onFinancas={setProjetoFinancas}
           onEditar={setProjetoEmEdicao}
         />
       )}
@@ -234,6 +244,10 @@ export default function AdmCompHome({ Usuario, onLogout }) {
         </div>
       )}
 
+      {abaAtiva === "financas" && <PainelFinancas token={token} projetos={projetos} />}
+
+      {projetoFinancas && <FinancasProjeto projeto={projetoFinancas} token={token} onFechar={() => setProjetoFinancas(null)} />}
+
       {abaAtiva === "ausencias" && (
         <div className="space-y-6">
           <div className="flex flex-wrap gap-2">
@@ -253,7 +267,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
             ))}
           </div>
           {vistaAusencias === "decidir" ? (
-            <DecidirAusencias token={token} pessoas={pessoas} meuId={Usuario?.id} />
+            <DecidirAusencias key={ausenciaDestacada || "todos"} token={token} pessoas={pessoas} meuId={Usuario?.id} destaqueId={ausenciaDestacada} />
           ) : (
             <MinhasAusencias token={token} userId={Usuario?.id} />
           )}

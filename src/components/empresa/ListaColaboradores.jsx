@@ -4,6 +4,7 @@ import { idDe, nomeCompleto } from "../../utils/formatar";
 import BotaoReenviarConvite from "../ui/BotaoReenviarConvite";
 import EstadoConta from "../ui/EstadoConta";
 import Icone from "../ui/Icone";
+import Avatar from "../ui/Avatar";
 
 // Diretório de colaboradores: pesquisa, cartões (telemóvel/tablet) e tabela (ecrãs largos).
 export default function ListaColaboradores({ colaboradores, carregando, onNovo, onAlocacoes, onCompetencias, onSalario, onEditar }) {
@@ -63,9 +64,12 @@ export default function ListaColaboradores({ colaboradores, carregando, onNovo, 
           filtrados.map((colab) => (
             <article key={idDe(colab)} className={`rounded-2xl border p-4 ${tema.card}`}>
               <div className="flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="break-words text-sm font-semibold">{nomeCompleto(colab) || "Nome não registado"}</h3>
-                  <p className={`mt-1 break-all text-xs ${tema.muted}`}>{colab.email || "E-mail não disponível"}</p>
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar url={colab.profile?.avatarUrl} nome={colab.profile?.firstName || colab.email} />
+                  <div className="min-w-0">
+                    <h3 className="break-words text-sm font-semibold">{nomeCompleto(colab) || "Nome não registado"}</h3>
+                    <p className={`mt-1 break-all text-xs ${tema.muted}`}>{colab.email || "E-mail não disponível"}</p>
+                  </div>
                 </div>
                 <EstadoConta estado={colab.status} />
               </div>
@@ -131,7 +135,12 @@ export default function ListaColaboradores({ colaboradores, carregando, onNovo, 
             ) : (
               filtrados.map((colab) => (
                 <tr key={idDe(colab)} className={`transition-colors ${tema.tableRowHover}`}>
-                  <td className="break-words px-6 py-4 font-semibold">{nomeCompleto(colab) || "Nome não registado"}</td>
+                  <td className="px-6 py-4">
+                    <span className="flex items-center gap-3 break-words font-semibold">
+                      <Avatar url={colab.profile?.avatarUrl} nome={colab.profile?.firstName || colab.email} tamanho="sm" />
+                      {nomeCompleto(colab) || "Nome não registado"}
+                    </span>
+                  </td>
                   <td className={`break-all px-6 py-4 font-mono text-xs ${tema.muted}`}>{colab.email || "—"}</td>
                   <td className="px-6 py-4">{colab.profile?.jobTitle || "Colaborador"}</td>
                   <td className="px-6 py-4">

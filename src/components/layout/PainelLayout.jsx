@@ -4,6 +4,7 @@ import logo from "../../assets/logo.png";
 import Icone from "../ui/Icone";
 import BotaoTema from "../ui/BotaoTema";
 import ModalAlterarSenha from "../conta/ModalAlterarSenha";
+import Avatar from "../ui/Avatar";
 import SinoNotificacoes from "../notificacoes/SinoNotificacoes";
 import FaixaAnuncios from "../anuncios/FaixaAnuncios";
 import { authService } from "../../services/authservice";
@@ -18,6 +19,8 @@ export default function PainelLayout({
   email,
   papel,
   onLogout,
+  onAbrirNotificacao,
+  avatarUrl,
   children,
 }) {
   const tema = useTheme();
@@ -63,7 +66,7 @@ export default function PainelLayout({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <SinoNotificacoes />
+            <SinoNotificacoes onAbrir={onAbrirNotificacao} />
             <BotaoTema compacto />
             <button
               type="button"
@@ -121,14 +124,12 @@ export default function PainelLayout({
 
         <div className={`space-y-3 border-t pt-4 ${tema.border}`}>
           <div className="flex min-w-0 items-center gap-3 px-2">
-            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${tema.iconBox}`}>
-              {email?.charAt(0).toUpperCase() || "?"}
-            </div>
+            <Avatar url={avatarUrl} nome={email} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold">{email || "Sessão ativa"}</p>
               <p className={`truncate text-xs ${tema.muted}`}>{papel}</p>
             </div>
-            <SinoNotificacoes alinhamento="esquerda" className="shrink-0" />
+            <SinoNotificacoes alinhamento="esquerda" className="shrink-0" onAbrir={onAbrirNotificacao} />
           </div>
           <button
             type="button"

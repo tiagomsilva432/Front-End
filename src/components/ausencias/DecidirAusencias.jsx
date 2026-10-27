@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import {
   ESTADOS_AUSENCIA,
   TIPOS_AUSENCIA,
+  apagarDocumento,
   aprovarAusencia,
   cancelarAusencia,
+  enviarDocumento,
   listarAusencias,
   recusarAusencia,
 } from "../../services/absenceservice";
@@ -11,13 +13,16 @@ import { useNotificacoes } from "../../notificacoes/notificacoes";
 import { useTheme } from "../../theme/tema";
 import { formatarIntervalo, idDe, nomeCompleto, tempoRelativo } from "../../utils/formatar";
 import Alerta from "../ui/Alerta";
+import Ficheiros from "../ui/Ficheiros";
 import { corDoEstado } from "./estiloAusencia";
 
 // Os pedidos de ausência da empresa para decidir (GET /absences). Ninguém decide o próprio pedido.
-export default function DecidirAusencias({ token, pessoas, meuId }) {
+// `destaqueId` (de uma notificação, ex.: documento novo) realça e mostra esse pedido.
+export default function DecidirAusencias({ token, pessoas, meuId, destaqueId }) {
   const tema = useTheme();
   const { versaoDados } = useNotificacoes();
-  const [estado, setEstado] = useState("pending");
+  // Vindo de uma notificação, mostra todos: uma baixa já chega aprovada.
+  const [estado, setEstado] = useState(destaqueId ? "" : "pending");
   const [pessoa, setPessoa] = useState("");
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -42,6 +47,14 @@ export default function DecidirAusencias({ token, pessoas, meuId }) {
       ativo = false;
     };
   }, [token, estado, pessoa, recarga, versaoDados]);
+
+  useEffect(() => {
+    if (!destaqueId || carregando) return;
+    document.getElementById(`ausencia-${destaqueId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [destaqueId, carregando, pedidos]);
+
+  const atualizarDocumentos = (id, fn) =>
+    setPedidos((atuais) => atuais.map((a) => (a.id === id ? { ...a, documents: fn(a.documents || []) } : a)));
 
   const pessoaPorId = new Map(pessoas.map((p) => [idDe(p), p]));
   const nomeDe = (id) => nomeCompleto(pessoaPorId.get(id)) || pessoaPorId.get(id)?.email || "Colaborador";
@@ -125,7 +138,11 @@ export default function DecidirAusencias({ token, pessoas, meuId }) {
             const meu = a.userId === meuId;
             const estaAberto = aberto?.id === a.id;
             return (
-              <article key={a.id} className={`rounded-2xl border p-4 sm:p-5 ${tema.card}`}>
+              <article
+                key={a.id}
+                id={`ausencia-${a.id}`}
+                className={`rounded-2xl border p-4 sm:p-5 ${tema.card} ${a.id === destaqueId ? "ring-2 ring-emerald-500" : ""}`}
+              >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
                     <p className="font-semibold">
@@ -184,6 +201,25 @@ export default function DecidirAusencias({ token, pessoas, meuId }) {
                     )}
                   </div>
                 </div>
+
+                {(a.documents?.length > 0 || ["pending", "approved"].includes(a.status)) && (
+                  <div className={`mt-3 border-t pt-3 ${tema.border}`}>
+                    <p className={`mb-1.5 text-xs font-semibold ${tema.muted}`}>Documentos</p>
+                    <Ficheiros
+                      ficheiros={a.documents || []}
+                      podeAlterar={["pending", "approved"].includes(a.status)}
+                      rotulo="Juntar documento"
+                      onEnviar={async (ficheiro) => {
+                        const novo = await enviarDocumento(a.id, ficheiro, token);
+                        atualizarDocumentos(a.id, (docs) => [...docs, novo]);
+                      }}
+                      onApagar={async (ficheiro) => {
+                        await apagarDocumento(a.id, ficheiro.id, token);
+                        atualizarDocumentos(a.id, (docs) => docs.filter((d) => d.id !== ficheiro.id));
+                      }}
+                    />
+                  </div>
+                )}
 
                 {estaAberto && (
                   <form
