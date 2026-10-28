@@ -3,16 +3,17 @@ import { listarAlocacoesProjeto } from "../../services/projetoservice";
 import { listarUsers } from "../../services/userservice";
 import { useNotificacoes } from "../../notificacoes/notificacoes";
 import { useTheme } from "../../theme/tema";
-import { alocacaoEmCurso, idDe } from "../../utils/formatar";
+import { ESTADOS_PROJETO, alocacaoEmCurso, idDe } from "../../utils/formatar";
+import Icone from "../ui/Icone";
 import BotaoVoltar from "../ui/BotaoVoltar";
 import ChatProjeto from "./ChatProjeto";
 import QuadroTarefas from "./QuadroTarefas";
 import RecursosProjeto from "./RecursosProjeto";
 
 const SEPARADORES = [
-  ["quadro", "Quadro"],
-  ["chat", "Chat"],
-  ["recursos", "Recursos"],
+  ["quadro", "Quadro", "quadro"],
+  ["chat", "Chat", "chat"],
+  ["recursos", "Recursos", "clipe"],
 ];
 
 // O espaço de um projeto para os seus membros: quadro de tarefas, chat e recursos.
@@ -61,35 +62,39 @@ export default function EspacoProjeto({ projeto, token, eu, pessoas: pessoasDada
     <div className="space-y-5">
       <div>
         <BotaoVoltar onClick={onVoltar}>Voltar aos projetos</BotaoVoltar>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <p className={`text-xs font-semibold uppercase tracking-wider ${tema.accent}`}>Projeto</p>
-            <h1 className="mt-1 truncate text-2xl font-bold">{projeto.name}</h1>
-            <p className={`mt-1 text-xs ${tema.muted}`}>
-              {membros.length} {membros.length === 1 ? "membro" : "membros"}
-              {souGestor ? " · É o gestor deste projeto" : souAdmin ? " · Vista de administrador" : ""}
-            </p>
-          </div>
-          <div role="tablist" aria-label="Secções do projeto" className="flex gap-2">
-            {SEPARADORES.map(([id, rotulo]) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={separador === id}
-                onClick={() => setSeparador(id)}
-                className={`relative rounded-lg border px-3.5 py-2 text-xs font-semibold ${separador === id ? tema.active : tema.secondaryBtn}`}
-              >
-                {rotulo}
-                {id === "chat" && porLerChat > 0 && (
-                  <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-                    {porLerChat > 99 ? "99+" : porLerChat}
-                    <span className="sr-only"> mensagens por ler</span>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+        <div className="min-w-0">
+          <h1 className="truncate text-2xl font-bold">{projeto.name}</h1>
+          <p className={`mt-1 text-sm ${tema.muted}`}>
+            {[
+              projeto.clientName,
+              ESTADOS_PROJETO[projeto.status],
+              `${membros.length} ${membros.length === 1 ? "membro" : "membros"}`,
+              souGestor ? "É o gestor deste projeto" : souAdmin ? "Vista de administrador" : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </div>
+        <div role="tablist" aria-label="Secções do projeto" className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
+          {SEPARADORES.map(([id, rotulo, icone]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={separador === id}
+              onClick={() => setSeparador(id)}
+              className={`relative flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition ${separador === id ? tema.active : tema.secondaryBtn}`}
+            >
+              <Icone nome={icone} className="h-5 w-5" />
+              {rotulo}
+              {id === "chat" && porLerChat > 0 && (
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                  {porLerChat > 99 ? "99+" : porLerChat}
+                  <span className="sr-only"> mensagens por ler</span>
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
