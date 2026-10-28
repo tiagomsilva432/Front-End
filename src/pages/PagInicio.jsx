@@ -38,7 +38,7 @@ const ECRAS = [
   ["equipa", "Equipa", "Colaboradores", "o-seu-erp/colaboradores", "O diretório da empresa, com cargos, competências e o estado de cada conta.", EcraEquipa],
   ["calendario", "Calendário", "Calendário", "o-seu-erp/calendario", "Quem está fora em cada dia, com os feriados nacionais e os da empresa.", EcraCalendario],
   ["avisos", "Avisos", "Anúncios", "o-seu-erp/notificacoes", "Anúncios em faixa e notificações pessoais em tempo real.", EcraAvisos],
-  ["financas", "Finanças", "Finanças", "o-seu-erp/financas", "Salários, despesas de projeto e da empresa mês a mês. Experimente ligar e desligar as séries na legenda.", EcraFinancas],
+  ["financas", "Finanças", "Finanças", "o-seu-erp/financas", "Salários, despesas de projeto e da empresa mês a mês. Clique na legenda para mostrar ou esconder cada linha.", EcraFinancas],
 ];
 
 const PERFIS = [

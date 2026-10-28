@@ -129,7 +129,7 @@ export default function ListaColaboradores({ colaboradores, carregando, onNovo, 
             {carregando || filtrados.length === 0 ? (
               <tr>
                 <td colSpan="5" className={`px-6 py-12 text-center text-xs ${tema.muted}`}>
-                  {carregando ? "A carregar dados do servidor..." : mensagemVazia}
+                  {carregando ? "A carregar…" : mensagemVazia}
                 </td>
               </tr>
             ) : (

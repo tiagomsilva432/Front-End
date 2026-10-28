@@ -55,7 +55,7 @@ export default function ModalCriarEmpresa({ token, onFechar, onCriada }) {
         <Campo id="empresa-nome" label="Nome da empresa" obrigatorio placeholder="Ex.: Empresa Exemplo, Lda" value={form.name} onChange={alterar("name")} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Campo id="empresa-nif" label="NIF / Tax ID" placeholder="Ex.: 500000000" value={form.taxId} onChange={alterar("taxId")} />
-          <Campo id="empresa-pais" label="Código do país (ISO)" maxLength={2} placeholder="PT" value={form.country} onChange={alterar("country")} />
+          <Campo id="empresa-pais" label="País (código de 2 letras)" maxLength={2} placeholder="PT" value={form.country} onChange={alterar("country")} />
         </div>
         <Campo id="empresa-email" label="E-mail de contacto" type="email" placeholder="contacto@empresa.com" value={form.email} onChange={alterar("email")} />
 

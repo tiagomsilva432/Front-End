@@ -137,7 +137,7 @@ export default function ModalAlocacoes({ colaborador, projetos, token, onFechar 
 
         {vaiSobrealocar && (
           <Alerta tipo="aviso">
-            Com esta alocação, a carga ficará acima de 100%. O sistema permite guardar e sinaliza a sobrealocação.
+            Com esta alocação, a carga fica acima de 100%. Pode guardar na mesma.
           </Alerta>
         )}
 

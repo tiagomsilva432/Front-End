@@ -216,9 +216,6 @@ export function EcraAvisos() {
       <div className={`overflow-hidden rounded-xl border ${tema.card}`}>
         <div className={`flex items-center justify-between border-b px-3 py-2.5 ${tema.border}`}>
           <p className="text-xs font-semibold">Notificações</p>
-          <p className={`flex items-center gap-1 text-[10px] ${tema.muted}`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Em tempo real
-          </p>
         </div>
         {NOTIFICACOES.map(([texto, quando], i) => (
           <div key={texto} className={`flex items-start gap-2.5 border-b px-3 py-2.5 last:border-b-0 ${tema.border} ${i < 2 ? tema.cardMuted : ""}`}>

@@ -65,7 +65,7 @@ export default function PainelGeralAdmin({ Usuario, onLogout }) {
     Promise.all(
       ids.map(async (id) => {
         const users = await listarAdminsEmpresa(id, token);
-        if (!Array.isArray(users)) throw new Error("Resposta inválida ao consultar administradores.");
+        if (!Array.isArray(users)) throw new Error("Não foi possível carregar os administradores.");
         return [id, users[0] || null];
       }),
     )

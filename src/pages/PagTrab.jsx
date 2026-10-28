@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import { obterUser } from "../services/userservice";
 import { listarAlocacoesUser, obterCargaAlocacao } from "../services/allocationservice";
 import { listarProjetos } from "../services/projetoservice";
-import { CATEGORIAS_COMPETENCIA, listarCompetenciasUser } from "../services/skillservice";
-import { listarSalarios, obterSalarioAtual } from "../services/salaryservice";
-import HistoricoSalarios from "../components/salarios/HistoricoSalarios";
-import NivelCompetencia from "../components/ui/NivelCompetencia";
 import CaixaAvaliacoes from "../components/avaliacoes/CaixaAvaliacoes";
 import PaginaAnuncios from "../components/anuncios/PaginaAnuncios";
 import MinhasAusencias from "../components/ausencias/MinhasAusencias";
 import CalendarioMes from "../components/calendario/CalendarioMes";
 import FinancasProjeto from "../components/financas/FinancasProjeto";
-import FotoPerfil from "../components/conta/FotoPerfil";
+import MeuPerfil from "../components/conta/MeuPerfil";
 import EspacoProjeto from "../components/projeto/EspacoProjeto";
 import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
@@ -75,28 +71,6 @@ export default function FuncHome({ Usuario, onLogout }) {
     setProjetoFinancas({ id: n.data.projectId, name: n.data.projectName });
     return true;
   };
-
-  const [competencias, setCompetencias] = useState({ carregando: Boolean(userId), lista: [], erro: "" });
-  const [salario, setSalario] = useState({ carregando: Boolean(userId), historico: [], atual: null, erro: "" });
-
-  // Competências e salário (só leitura: são definidos pelo administrador da empresa).
-  useEffect(() => {
-    if (!userId) return;
-    let ativo = true;
-    listarCompetenciasUser(userId, token)
-      .then((lista) => ativo && setCompetencias({ carregando: false, lista: Array.isArray(lista) ? lista : [], erro: "" }))
-      .catch((erro) => ativo && setCompetencias({ carregando: false, lista: [], erro: erro.message || "Não foi possível carregar as competências." }));
-    Promise.all([listarSalarios(userId, token), obterSalarioAtual(userId, token)])
-      .then(([historico, atual]) =>
-        ativo && setSalario({ carregando: false, historico: Array.isArray(historico) ? historico : [], atual, erro: "" }),
-      )
-      .catch((erro) =>
-        ativo && setSalario({ carregando: false, historico: [], atual: null, erro: erro.message || "Não foi possível carregar o salário." }),
-      );
-    return () => {
-      ativo = false;
-    };
-  }, [userId, token]);
 
   // Dados da conta e do perfil.
   useEffect(() => {
@@ -229,7 +203,7 @@ export default function FuncHome({ Usuario, onLogout }) {
             <CartaoMetrica
               titulo="Projetos atribuídos"
               valor={carregandoAlocacoes ? "…" : alocacoes.length}
-              descricao="Projetos com alocação aberta na sua conta."
+              descricao="Projetos em que está a trabalhar."
             />
             <CartaoMetrica
               titulo="Carga de trabalho"
@@ -239,7 +213,7 @@ export default function FuncHome({ Usuario, onLogout }) {
             <CartaoMetrica
               titulo="Perfil"
               valor={carregandoConta ? "…" : perfil ? "Disponível" : "Incompleto"}
-              descricao="Estado dos dados pessoais associados à conta."
+              descricao="Se os seus dados pessoais estão preenchidos."
             />
           </div>
           {avisoSobrealocacao}
@@ -282,7 +256,7 @@ export default function FuncHome({ Usuario, onLogout }) {
         <div className="space-y-5">
           <div>
             <h2 className="text-xl font-bold sm:text-2xl">Meus projetos</h2>
-            <p className={`mt-1 text-sm ${tema.muted}`}>Projetos com alocações abertas associadas à sua conta.</p>
+            <p className={`mt-1 text-sm ${tema.muted}`}>Os projetos em que está a trabalhar.</p>
           </div>
           {alertaAlocacoes}
           {avisoSobrealocacao}
@@ -339,74 +313,17 @@ export default function FuncHome({ Usuario, onLogout }) {
       )}
 
       {abaAtiva === "perfil" && (
-        <div className="space-y-5">
-          <div>
-            <h2 className="text-xl font-bold sm:text-2xl">O meu perfil</h2>
-            <p className={`mt-1 text-sm ${tema.muted}`}>
-              Dados pessoais registados pela empresa. Para alterar algum dado, contacte o administrador.
-            </p>
-          </div>
-          {userId && (
-            <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
-              <h3 className="mb-4 font-semibold">Foto de perfil</h3>
-              <FotoPerfil
-                userId={userId}
-                url={perfil?.avatarUrl}
-                nome={perfil?.firstName || email}
-                token={token}
-                onAlterada={(url) =>
-                  setDadosConta((conta) => (conta ? { ...conta, profile: { ...(conta.profile || {}), avatarUrl: url } } : conta))
-                }
-              />
-            </section>
-          )}
-          <ListaDados
-            titulo="Dados da conta"
-            campos={[
-              ["Nome", valorConta(nomeDaConta || "Não informado")],
-              ["E-mail", email],
-              ["Função", cargo],
-              ["Telefone", perfil?.phone || "Não informado"],
-              ["Morada", perfil?.address || "Não informada"],
-              ["Data de nascimento", formatarData(perfil?.birthDate)],
-              ["Data de admissão", formatarData(perfil?.hireDate)],
-            ]}
-          />
-
-          <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
-            <h2 className="font-semibold">As minhas competências</h2>
-            {competencias.erro && <Alerta className="mt-4">{competencias.erro}</Alerta>}
-            {competencias.carregando ? (
-              <p className={`mt-4 text-sm ${tema.muted}`}>A carregar…</p>
-            ) : competencias.lista.length === 0 && !competencias.erro ? (
-              <p className={`mt-4 text-sm ${tema.muted}`}>Ainda não tem competências registadas.</p>
-            ) : (
-              <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {competencias.lista.map((c) => (
-                  <li key={c.skillId} className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${tema.border} ${tema.cardMuted}`}>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{c.name}</p>
-                      <p className={`text-xs ${tema.muted}`}>
-                        {CATEGORIAS_COMPETENCIA[c.category] || c.category}
-                        {c.yearsExperience ? ` · ${Number(c.yearsExperience)} anos` : ""}
-                      </p>
-                    </div>
-                    <NivelCompetencia nivel={c.proficiency} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
-            <h2 className="mb-4 font-semibold">O meu salário</h2>
-            {salario.erro ? (
-              <Alerta>{salario.erro}</Alerta>
-            ) : (
-              <HistoricoSalarios historico={salario.historico} atual={salario.atual} carregando={salario.carregando} />
-            )}
-          </section>
-        </div>
+        <MeuPerfil
+          userId={userId}
+          token={token}
+          conta={dadosConta}
+          carregandoConta={carregandoConta}
+          cargoPadrao="Colaborador"
+          descricao="Dados pessoais registados pela empresa. Para alterar algum dado, contacte o administrador."
+          onAvatarAlterado={(url) =>
+            setDadosConta((conta) => (conta ? { ...conta, profile: { ...(conta.profile || {}), avatarUrl: url } } : conta))
+          }
+        />
       )}
     </PainelLayout>
   );

@@ -46,7 +46,7 @@ function PagLogin({ onLogin }) {
           return;
         }
       }
-      setErro(err.message || "Não foi possível conectar ao servidor.");
+      setErro(err.message || "Não foi possível ligar ao servidor. Tente novamente.");
     } finally {
       setCarregando(false);
     }

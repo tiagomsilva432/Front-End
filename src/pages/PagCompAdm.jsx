@@ -31,6 +31,7 @@ import PainelFinancas from "../components/financas/PainelFinancas";
 import FinancasProjeto from "../components/financas/FinancasProjeto";
 import VisaoGeral from "../components/empresa/VisaoGeral";
 import EspacoProjeto from "../components/projeto/EspacoProjeto";
+import MeuPerfil from "../components/conta/MeuPerfil";
 import { useNotificacoes } from "../notificacoes/notificacoes";
 import { useTheme } from "../theme/tema";
 
@@ -45,6 +46,7 @@ const MENU = [
   { id: "avaliacoes", label: "Avaliações", icone: "avaliacao" },
   { id: "anuncios", label: "Anúncios", icone: "megafone" },
   { id: "empresa", label: "Empresa", icone: "empresa" },
+  { id: "perfil", label: "O meu perfil", icone: "utilizador" },
 ];
 
 // Sub-ecrãs que pertencem a uma entrada do menu.
@@ -147,6 +149,8 @@ export default function AdmCompHome({ Usuario, onLogout }) {
   };
 
   const colaboradores = pessoas.filter((p) => p.role === "employee");
+  // A própria conta vem na lista de pessoas da empresa, já com o perfil.
+  const eu = pessoas.find((p) => p.id === Usuario?.id) || null;
 
   return (
     <PainelLayout
@@ -158,7 +162,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
         setAbaAtiva(aba);
       }}
       email={Usuario?.email}
-      avatarUrl={pessoas.find((p) => p.id === Usuario?.id)?.profile?.avatarUrl}
+      avatarUrl={eu?.profile?.avatarUrl}
       papel="Administrador da empresa"
       onLogout={onLogout}
       onAbrirNotificacao={abrirNotificacao}
@@ -313,12 +317,26 @@ export default function AdmCompHome({ Usuario, onLogout }) {
 
       {abaAtiva === "competencias" && <CatalogoCompetencias token={token} pessoas={pessoas} />}
 
+      {abaAtiva === "perfil" && (
+        <MeuPerfil
+          userId={Usuario?.id}
+          token={token}
+          conta={eu || { email: Usuario?.email }}
+          carregandoConta={carregando}
+          cargoPadrao="Administrador da empresa"
+          descricao="Os seus dados na empresa, as suas competências e o seu histórico salarial."
+          onAvatarAlterado={(url) =>
+            setPessoas((lista) => lista.map((p) => (p.id === Usuario?.id ? { ...p, profile: { ...(p.profile || {}), avatarUrl: url } } : p)))
+          }
+        />
+      )}
+
       {abaAtiva === "empresa" && (
         <div className="max-w-4xl space-y-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold">Dados da empresa</h1>
-              <p className={`mt-1 text-xs ${tema.muted}`}>Informação cadastral usada nos e-mails e documentos.</p>
+              <p className={`mt-1 text-xs ${tema.muted}`}>Estes dados aparecem nos e-mails enviados à equipa.</p>
             </div>
             <button
               type="button"
@@ -330,7 +348,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
             </button>
           </div>
           <ListaDados
-            titulo="Dados cadastrais"
+            titulo="Dados da empresa"
             campos={[
               ["Nome", empresa ? empresa.name : "A carregar…"],
               ["NIF / Tax ID", empresa?.taxId || "Não registado"],

@@ -97,7 +97,7 @@ export default function ModalAnuncio({ anuncio, ambitos, empresas = [], projetos
     <Modal
       id="modal-anuncio"
       titulo={editar ? "Editar anúncio" : "Novo anúncio"}
-      subtitulo={editar ? `Âmbito: ${AMBITOS_ANUNCIO[anuncio.scope]}` : "Mensagem num só sentido para quem estiver no âmbito escolhido."}
+      subtitulo={editar ? `Âmbito: ${AMBITOS_ANUNCIO[anuncio.scope]}` : "O anúncio aparece a todas as pessoas do âmbito escolhido."}
       onFechar={onFechar}
       bloqueado={aGuardar}
     >

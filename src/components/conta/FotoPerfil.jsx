@@ -66,7 +66,7 @@ export default function FotoPerfil({ userId, url, nome, token, onAlterada }) {
               onClick={() => entrada.current?.click()}
               className={`rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${tema.secondaryBtn}`}
             >
-              {aGuardar ? "A guardar…" : url ? "Mudar foto" : "Pôr foto"}
+              {aGuardar ? "A guardar…" : url ? "Mudar foto" : "Carregar foto"}
             </button>
             {url && (
               <button type="button" disabled={aGuardar} onClick={remover} className="text-xs font-semibold text-red-500 hover:underline disabled:opacity-50">
@@ -74,7 +74,7 @@ export default function FotoPerfil({ userId, url, nome, token, onAlterada }) {
               </button>
             )}
           </div>
-          <p className={`text-[11px] ${tema.muted}`}>{LIMITES_FICHEIRO.avatar.descricao}. Fica quadrada, cortada ao centro.</p>
+          <p className={`text-[11px] ${tema.muted}`}>{LIMITES_FICHEIRO.avatar.descricao}.</p>
         </div>
       </div>
       {erro && <Alerta>{erro}</Alerta>}
