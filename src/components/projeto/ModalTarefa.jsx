@@ -21,7 +21,7 @@ import Avatar from "../ui/Avatar";
 import Campo from "../ui/Campo";
 import Ficheiros from "../ui/Ficheiros";
 import Modal from "../ui/Modal";
-import { normalizarEtiquetas, podeApagar, podeMover } from "./regrasTarefa";
+import { normalizarEtiquetas, podeApagar, podeAtribuir, podeEditarDetalhes, podeEditarTarefa, podeEditarTexto, podeMover } from "./regrasTarefa";
 
 const formDe = (t) => ({
   title: t?.title || "",
@@ -180,6 +180,14 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
 
   const destinos = COLUNAS_TAREFA.filter(([s]) => s === tarefa?.status || (tarefa && podeMover(tarefa, s, { eu, gere })));
   const estadoAtual = COLUNAS_TAREFA.find(([s]) => s === tarefa?.status)?.[1];
+  const podeEditar = podeEditarTarefa(tarefa, { gere });
+  const podeTexto = podeEditarTexto(tarefa, { eu, gere });
+  const podeDetalhes = podeEditarDetalhes(tarefa, { eu, gere }, form.assigneeId || null);
+  const podeAnexar = podeEditarDetalhes(tarefa, { eu, gere });
+  const semResponsavel = podeAtribuir(tarefa, null, { eu, gere });
+  const responsaveis = membros.filter((p) => podeAtribuir(tarefa, idDe(p), { eu, gere }));
+  const escolheResponsavel = podeEditar && responsaveis.length + (semResponsavel ? 1 : 0) > 1;
+  const algoEditavel = podeTexto || podeDetalhes || escolheResponsavel;
 
   return (
     <Modal
@@ -222,20 +230,39 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
         )}
 
         <form onSubmit={guardar} className="space-y-4">
-          <Campo id="tarefa-titulo" label="Título" obrigatorio maxLength={150} value={form.title} onChange={alterar("title")} disabled={aGuardar} />
-          <Campo id="tarefa-descricao" label="Descrição" como="textarea" rows={3} maxLength={5000} value={form.description} onChange={alterar("description")} disabled={aGuardar} />
+          {!podeEditar ? (
+            <p className={`text-[11px] ${tema.muted}`}>Uma tarefa concluída só é alterada pelo gestor ou por um administrador.</p>
+          ) : !podeDetalhes ? (
+            <p className={`text-[11px] ${tema.muted}`}>
+              Só quem criou a tarefa, o responsável, o gestor ou um administrador a alteram. Pode comentar
+              {escolheResponsavel ? ", ou ficar com ela." : "."}
+            </p>
+          ) : (
+            !podeTexto && <p className={`text-[11px] ${tema.muted}`}>Só quem criou a tarefa, o gestor ou um administrador alteram o título e a descrição.</p>
+          )}
+          <Campo id="tarefa-titulo" label="Título" obrigatorio maxLength={150} value={form.title} onChange={alterar("title")} disabled={aGuardar || !podeTexto} />
+          <Campo
+            id="tarefa-descricao"
+            label="Descrição"
+            como="textarea"
+            rows={3}
+            maxLength={5000}
+            value={form.description}
+            onChange={alterar("description")}
+            disabled={aGuardar || !podeTexto}
+          />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo id="tarefa-responsavel" label="Responsável" como="select" value={form.assigneeId} onChange={alterar("assigneeId")} disabled={aGuardar}>
-              <option value="">Sem responsável</option>
-              {membros.map((p) => (
+            <Campo id="tarefa-responsavel" label="Responsável" como="select" value={form.assigneeId} onChange={alterar("assigneeId")} disabled={aGuardar || !escolheResponsavel}>
+              {semResponsavel && <option value="">Sem responsável</option>}
+              {responsaveis.map((p) => (
                 <option key={idDe(p)} value={idDe(p)}>
                   {nomeCompleto(p) || p.email}
                   {idDe(p) === eu?.id ? " (eu)" : ""}
                 </option>
               ))}
             </Campo>
-            <Campo id="tarefa-prazo" label="Prazo" type="date" value={form.dueDate} onChange={alterar("dueDate")} disabled={aGuardar} />
-            <Campo id="tarefa-prioridade" label="Prioridade" como="select" value={form.priority} onChange={alterar("priority")} disabled={aGuardar}>
+            <Campo id="tarefa-prazo" label="Prazo" type="date" value={form.dueDate} onChange={alterar("dueDate")} disabled={aGuardar || !podeDetalhes} />
+            <Campo id="tarefa-prioridade" label="Prioridade" como="select" value={form.priority} onChange={alterar("priority")} disabled={aGuardar || !podeDetalhes}>
               {Object.entries(PRIORIDADES_TAREFA).map(([v, r]) => (
                 <option key={v} value={v}>
                   {r}
@@ -258,7 +285,7 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
                 placeholder="ex.: bug, frontend"
                 value={form.labels}
                 onChange={alterar("labels")}
-                disabled={aGuardar}
+                disabled={aGuardar || !podeDetalhes}
               />
               <datalist id="etiquetas-do-projeto">
                 {etiquetas.map((e) => (
@@ -291,7 +318,7 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
               <button type="button" disabled={aGuardar} onClick={onFechar} className={`rounded-xl border px-4 py-2 text-sm ${tema.secondaryBtn}`}>
                 {nova ? "Cancelar" : "Fechar"}
               </button>
-              <button type="submit" disabled={aGuardar || !form.title.trim()} className={`rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-60 ${tema.primaryBtn}`}>
+              <button type="submit" disabled={aGuardar || !algoEditavel || !form.title.trim()} className={`rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-60 ${tema.primaryBtn}`}>
                 {aGuardar ? "A guardar…" : nova ? "Criar tarefa" : "Guardar alterações"}
               </button>
             </div>
@@ -304,6 +331,7 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
               <h3 className="mb-2 text-sm font-semibold">Anexos</h3>
               <Ficheiros
                 ficheiros={tarefa.attachments || []}
+                podeAlterar={podeAnexar}
                 rotulo="Anexar ficheiro"
                 onEnviar={async (f) => {
                   const anexo = await anexarFicheiroTarefa(projectId, tarefa.id, f, token);

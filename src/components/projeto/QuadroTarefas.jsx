@@ -278,7 +278,14 @@ export default function QuadroTarefas({ projectId, token, eu, gere, membros, pes
                                 {formatarData(t.dueDate)}
                               </span>
                             )}
-                            {t.commentCount > 0 && <span aria-label={`${t.commentCount} comentários`}>💬 {t.commentCount}</span>}
+                            {t.commentCount > 0 && (
+                              <span className="flex items-center gap-1">
+                                <span aria-hidden="true" className="text-sm leading-none">
+                                  💬
+                                </span>
+                                {t.commentCount === 1 ? "1 comentário" : `${t.commentCount} comentários`}
+                              </span>
+                            )}
                             {t.attachments.length > 0 && <span aria-label={`${t.attachments.length} anexos`}>📎 {t.attachments.length}</span>}
                           </span>
                           {responsavel ? (
