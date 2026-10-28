@@ -15,7 +15,7 @@ const ACOES = {
 
 const DESCRICOES = {
   suspended: "A pessoa deixa de conseguir usar a aplicação até a conta ser reativada.",
-  terminated: "Esta ação é definitiva: a conta não pode voltar a ser ativada.",
+  terminated: "Esta ação é definitiva: a conta não pode voltar a ser ativada. O salário e as alocações terminam hoje.",
 };
 
 export default function AcoesEstadoConta({ conta, token, onAlterado }) {
