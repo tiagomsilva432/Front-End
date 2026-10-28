@@ -12,6 +12,7 @@ import MinhasAusencias from "../components/ausencias/MinhasAusencias";
 import CalendarioMes from "../components/calendario/CalendarioMes";
 import FinancasProjeto from "../components/financas/FinancasProjeto";
 import FotoPerfil from "../components/conta/FotoPerfil";
+import EspacoProjeto from "../components/projeto/EspacoProjeto";
 import { authService } from "../services/authservice";
 import PainelLayout from "../components/layout/PainelLayout";
 import Alerta from "../components/ui/Alerta";
@@ -57,11 +58,19 @@ export default function FuncHome({ Usuario, onLogout }) {
   const [tentativaAlocacoes, setTentativaAlocacoes] = useState(0);
 
   const [projetosEmpresa, setProjetosEmpresa] = useState([]);
-  const { versaoDados } = useNotificacoes();
+  const { versaoDados, chatPorLer } = useNotificacoes();
+  const [projetoAberto, setProjetoAberto] = useState(null); // { projeto, separador, tarefaId }
   const [projetoFinancas, setProjetoFinancas] = useState(null);
 
   // A notificação de orçamento (80% / 100%) abre as finanças do projeto que gere.
   const abrirNotificacao = (n) => {
+    // Tarefas do quadro: abre o projeto já nessa tarefa.
+    if (["task.assigned", "task.review_requested", "task.reviewed", "task.commented"].includes(n.type) && n.data?.projectId) {
+      const projeto = projetosEmpresa.find((p) => idDe(p) === n.data.projectId) || { id: n.data.projectId, name: n.data.projectName };
+      setProjetoAberto({ projeto, separador: "quadro", tarefaId: n.data.taskId });
+      setAbaAtiva("projetos");
+      return true;
+    }
     if (n.type !== "project.budget_threshold" || !n.data?.projectId) return false;
     setProjetoFinancas({ id: n.data.projectId, name: n.data.projectName });
     return true;
@@ -186,9 +195,12 @@ export default function FuncHome({ Usuario, onLogout }) {
   return (
     <PainelLayout
       titulo="Área do colaborador"
-      menuItems={MENU}
+      menuItems={MENU.map((item) => (item.id === "projetos" ? { ...item, contador: chatPorLer.total } : item))}
       abaSelecionada={abaAtiva}
-      onMudarAba={setAbaAtiva}
+      onMudarAba={(aba) => {
+        setProjetoAberto(null);
+        setAbaAtiva(aba);
+      }}
       email={email}
       papel={cargo}
       avatarUrl={perfil?.avatarUrl}
@@ -254,7 +266,19 @@ export default function FuncHome({ Usuario, onLogout }) {
         </div>
       )}
 
-      {abaAtiva === "projetos" && (
+      {abaAtiva === "projetos" && projetoAberto && (
+        <EspacoProjeto
+          key={`${projetoAberto.projeto.id}-${projetoAberto.tarefaId || ""}`}
+          projeto={projetoAberto.projeto}
+          token={token}
+          eu={{ id: userId, role: Usuario?.role }}
+          separadorInicial={projetoAberto.separador}
+          tarefaInicial={projetoAberto.tarefaId}
+          onVoltar={() => setProjetoAberto(null)}
+        />
+      )}
+
+      {abaAtiva === "projetos" && !projetoAberto && (
         <div className="space-y-5">
           <div>
             <h2 className="text-xl font-bold sm:text-2xl">Meus projetos</h2>
@@ -262,7 +286,13 @@ export default function FuncHome({ Usuario, onLogout }) {
           </div>
           {alertaAlocacoes}
           {avisoSobrealocacao}
-          <ListaAlocacoes alocacoes={projetosAlocados} carregando={carregandoAlocacoes} token={token} />
+          <ListaAlocacoes
+            alocacoes={projetosAlocados}
+            carregando={carregandoAlocacoes}
+            token={token}
+            porLer={chatPorLer.porProjeto}
+            onAbrir={(projeto) => setProjetoAberto({ projeto, separador: "quadro" })}
+          />
 
           {projetosGeridos.length > 0 && (
             <section className={`rounded-2xl border p-5 sm:p-6 ${tema.card}`}>
@@ -272,6 +302,14 @@ export default function FuncHome({ Usuario, onLogout }) {
                 {projetosGeridos.map((projeto) => (
                   <li key={idDe(projeto)} className={`flex items-center justify-between gap-3 px-4 py-3 text-sm ${tema.border}`}>
                     <span className="min-w-0 truncate font-medium">{projeto.name}</span>
+                    <span className="flex shrink-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setProjetoAberto({ projeto, separador: "quadro" })}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-bold ${tema.primaryBtn}`}
+                    >
+                      Abrir
+                    </button>
                     <button
                       type="button"
                       onClick={() => setProjetoFinancas({ id: idDe(projeto), name: projeto.name })}
@@ -279,6 +317,7 @@ export default function FuncHome({ Usuario, onLogout }) {
                     >
                       Finanças e despesas
                     </button>
+                    </span>
                   </li>
                 ))}
               </ul>
