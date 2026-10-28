@@ -23,7 +23,7 @@ export default function PagAtivacao({ onConcluido }) {
     setErro("");
 
     if (!token) {
-      setErro("Token de ativação inválido ou ausente no link.");
+      setErro("O link de ativação é inválido ou está incompleto.");
       return;
     }
 

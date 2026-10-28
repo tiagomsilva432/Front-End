@@ -336,7 +336,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold">Dados da empresa</h1>
-              <p className={`mt-1 text-xs ${tema.muted}`}>Informação cadastral usada nos e-mails e documentos.</p>
+              <p className={`mt-1 text-xs ${tema.muted}`}>Estes dados aparecem nos e-mails enviados à equipa.</p>
             </div>
             <button
               type="button"
@@ -348,7 +348,7 @@ export default function AdmCompHome({ Usuario, onLogout }) {
             </button>
           </div>
           <ListaDados
-            titulo="Dados cadastrais"
+            titulo="Dados da empresa"
             campos={[
               ["Nome", empresa ? empresa.name : "A carregar…"],
               ["NIF / Tax ID", empresa?.taxId || "Não registado"],

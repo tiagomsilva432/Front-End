@@ -203,7 +203,7 @@ export default function FuncHome({ Usuario, onLogout }) {
             <CartaoMetrica
               titulo="Projetos atribuídos"
               valor={carregandoAlocacoes ? "…" : alocacoes.length}
-              descricao="Projetos com alocação aberta na sua conta."
+              descricao="Projetos em que está a trabalhar."
             />
             <CartaoMetrica
               titulo="Carga de trabalho"
@@ -213,7 +213,7 @@ export default function FuncHome({ Usuario, onLogout }) {
             <CartaoMetrica
               titulo="Perfil"
               valor={carregandoConta ? "…" : perfil ? "Disponível" : "Incompleto"}
-              descricao="Estado dos dados pessoais associados à conta."
+              descricao="Se os seus dados pessoais estão preenchidos."
             />
           </div>
           {avisoSobrealocacao}
@@ -256,7 +256,7 @@ export default function FuncHome({ Usuario, onLogout }) {
         <div className="space-y-5">
           <div>
             <h2 className="text-xl font-bold sm:text-2xl">Meus projetos</h2>
-            <p className={`mt-1 text-sm ${tema.muted}`}>Projetos com alocações abertas associadas à sua conta.</p>
+            <p className={`mt-1 text-sm ${tema.muted}`}>Os projetos em que está a trabalhar.</p>
           </div>
           {alertaAlocacoes}
           {avisoSobrealocacao}

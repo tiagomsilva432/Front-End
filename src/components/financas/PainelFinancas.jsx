@@ -171,7 +171,7 @@ export default function PainelFinancas({ token, projetos }) {
             <div className={`rounded-2xl border p-5 sm:col-span-3 sm:p-6 2xl:col-span-1 ${tema.card}`}>
               <p className={`text-xs font-semibold uppercase tracking-wider ${tema.muted}`}>Total do período</p>
               <p className="mt-2 text-5xl font-extrabold">{euros(totalVisivel)}</p>
-              <p className={`mt-2 text-xs ${tema.muted}`}>Soma das séries visíveis no gráfico.</p>
+              <p className={`mt-2 text-xs ${tema.muted}`}>Soma do que está visível no gráfico.</p>
             </div>
             {series.map((s) => (
               <div key={s.chave} className={`rounded-2xl border p-5 ${tema.card}`}>

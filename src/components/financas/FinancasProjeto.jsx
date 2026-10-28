@@ -74,8 +74,8 @@ export default function FinancasProjeto({ projeto, token, onFechar }) {
               </dl>
               <p className={`mt-3 text-xs ${tema.muted}`}>
                 {comPessoas
-                  ? "O gasto inclui o custo das pessoas alocadas (salário × 1,44375: 14 meses + TSU), na proporção da alocação."
-                  : "Como gestor do projeto, vê só as despesas: o custo em pessoas fica de fora porque revelaria salários."}
+                  ? "O gasto inclui o custo das pessoas alocadas ao projeto."
+                  : "Como gestor do projeto, vê apenas as despesas."}
               </p>
             </>
           )}
