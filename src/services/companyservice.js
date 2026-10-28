@@ -9,11 +9,12 @@ export const criarEmpresa = async (dadosEmpresa, token) => {
   const result = await apiRequest("/companies", {
     method: "POST",
     token,
+    // Os opcionais vazios não vão: o back recusa null nestes campos, e sem country põe "PT".
     body: {
       name: dadosEmpresa.name,
-      taxId: dadosEmpresa.taxId || null,
-      email: dadosEmpresa.email || null,
-      country: dadosEmpresa.country || null,
+      ...(dadosEmpresa.taxId ? { taxId: dadosEmpresa.taxId } : {}),
+      ...(dadosEmpresa.email ? { email: dadosEmpresa.email } : {}),
+      ...(dadosEmpresa.country ? { country: dadosEmpresa.country } : {}),
     },
   });
   return result;

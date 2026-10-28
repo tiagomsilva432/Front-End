@@ -6,8 +6,8 @@ import JanelaApp from "../components/inicio/JanelaApp";
 import { EcraAusencias, EcraAvisos, EcraCalendario, EcraEquipa, EcraFinancas, EcraOrcamentos } from "../components/inicio/EcrasDemo";
 import { useTheme } from "../theme/tema";
 
-// Para onde vão os pedidos de demonstração (provisório, até haver um e-mail comercial).
-const EMAIL_COMERCIAL = "filipeptprofi@gmail.com";
+// Sem VITE_CONTACT_EMAIL, o pedido de demonstração abre o e-mail sem destinatário.
+const EMAIL_COMERCIAL = import.meta.env.VITE_CONTACT_EMAIL || "";
 
 const NAV = [
   ["#funcionalidades", "Funcionalidades"],

@@ -207,7 +207,14 @@ export default function QuadroTarefas({ projectId, token, eu, gere, membros, pes
                 e.preventDefault();
                 if (arrastada && alvo?.status === status) {
                   const semEla = lista.filter((t) => t.id !== arrastada.id);
-                  const posicao = Math.min(alvo.posicao, semEla.length);
+                  // O alvo conta com o cartão arrastado; o servidor conta sem ele. Abaixo do sítio dele, é menos um.
+                  const atual = lista.findIndex((t) => t.id === arrastada.id);
+                  const posicao = Math.min(atual !== -1 && alvo.posicao > atual ? alvo.posicao - 1 : alvo.posicao, semEla.length);
+                  if (atual === posicao) {
+                    setArrastada(null);
+                    setAlvo(null);
+                    return;
+                  }
                   mover(arrastada, status, posicao);
                 }
                 setArrastada(null);
@@ -273,12 +280,22 @@ export default function QuadroTarefas({ projectId, token, eu, gere, membros, pes
                         <span className={`mt-2.5 flex items-center justify-between gap-2 text-[11px] ${tema.muted}`}>
                           <span className="flex items-center gap-2.5">
                             {t.dueDate && (
-                              <span className={atrasada(t, hoje) ? "font-semibold text-red-500" : ""}>
-                                {atrasada(t, hoje) ? "Atrasada · " : ""}
-                                {formatarData(t.dueDate)}
+                              <span
+                                className={`flex items-center gap-1 ${atrasada(t, hoje) ? "font-semibold text-red-500" : ""}`}
+                                title={atrasada(t, hoje) ? "Prazo ultrapassado" : undefined}
+                              >
+                                <Icone nome="calendario" className="h-3.5 w-3.5" />
+                                Prazo: {formatarData(t.dueDate)}
                               </span>
                             )}
-                            {t.commentCount > 0 && <span aria-label={`${t.commentCount} comentários`}>💬 {t.commentCount}</span>}
+                            {t.commentCount > 0 && (
+                              <span className="flex items-center gap-1">
+                                <span aria-hidden="true" className="text-sm leading-none">
+                                  💬
+                                </span>
+                                {t.commentCount === 1 ? "1 comentário" : `${t.commentCount} comentários`}
+                              </span>
+                            )}
                             {t.attachments.length > 0 && <span aria-label={`${t.attachments.length} anexos`}>📎 {t.attachments.length}</span>}
                           </span>
                           {responsavel ? (
