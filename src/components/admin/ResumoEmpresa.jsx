@@ -30,7 +30,7 @@ export default function ResumoEmpresa({ empresa, admin, token, onVoltar, onEmpre
         </div>
       </div>
       <ListaDados
-        titulo="Dados cadastrais"
+        titulo="Dados da empresa"
         campos={[
           ["Nome", empresa.name || "Não registado"],
           ["NIF / Tax ID", empresa.taxId || "Não registado"],

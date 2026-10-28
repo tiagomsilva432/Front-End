@@ -104,7 +104,7 @@ export default function CatalogoCompetencias({ token, podeEditar = false, pessoa
         <h1 className="text-2xl font-bold">Competências</h1>
         <p className={`mt-1 text-xs ${tema.muted}`}>
           {podeEditar
-            ? "Catálogo partilhado por todas as empresas. Os nomes são únicos, sem distinguir maiúsculas."
+            ? "Catálogo partilhado por todas as empresas."
             : "Catálogo de competências. Veja quem as tem na sua empresa; atribuem-se no diretório de colaboradores."}
         </p>
       </div>

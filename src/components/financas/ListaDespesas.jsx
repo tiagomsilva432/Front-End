@@ -154,7 +154,7 @@ export default function ListaDespesas({ token, projectId, projetos = [], onAlter
               </div>
               {aApagar === d.id && (
                 <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                  <span className={`text-xs ${tema.muted}`}>Apagar serve para corrigir erros. Confirma?</span>
+                  <span className={`text-xs ${tema.muted}`}>Apagar esta despesa?</span>
                   <button type="button" onClick={() => setAApagar(null)} className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${tema.secondaryBtn}`}>
                     Cancelar
                   </button>

@@ -185,7 +185,7 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
     <Modal
       id="modal-tarefa"
       titulo={nova ? "Nova tarefa" : tarefa.title}
-      subtitulo={nova ? "Fica no fundo da coluna escolhida." : `${estadoAtual} · criada por ${nomeDe(tarefa.createdBy)} ${tempoRelativo(tarefa.createdAt)}`}
+      subtitulo={nova ? undefined : `${estadoAtual} · criada por ${nomeDe(tarefa.createdBy)} ${tempoRelativo(tarefa.createdAt)}`}
       onFechar={onFechar}
       bloqueado={aGuardar}
       largura="max-w-3xl"
@@ -216,7 +216,7 @@ export default function ModalTarefa({ projectId, tarefa: inicial, token, eu, ger
                 ? "Só o gestor do projeto ou um administrador aprova (passa a Concluído)."
                 : destinos.length < 2
                   ? "Só o responsável, o gestor ou um administrador mexem nesta tarefa."
-                  : "Nada passa a Concluído sem passar pela revisão."}
+                  : "Para ficar concluída, a tarefa passa primeiro pela revisão."}
             </p>
           </div>
         )}

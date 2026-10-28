@@ -44,11 +44,14 @@ export default function ListaAlocacoes({ alocacoes, carregando, resumida = false
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="break-words text-base font-bold">{alocacao.projeto?.name || "Projeto"}</h3>
+              <p className={`mt-1 text-sm ${tema.muted}`}>{alocacao.projeto?.clientName || "Cliente não indicado"}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
               {onAbrir && alocacao.projeto && (
                 <button
                   type="button"
                   onClick={() => onAbrir(alocacao.projeto)}
-                  className={`mt-2 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold ${tema.primaryBtn}`}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold ${tema.primaryBtn}`}
                 >
                   Abrir projeto
                   {porLer[alocacao.projectId] > 0 && (
@@ -56,11 +59,10 @@ export default function ListaAlocacoes({ alocacoes, carregando, resumida = false
                   )}
                 </button>
               )}
-              <p className={`mt-1 text-sm ${tema.muted}`}>{alocacao.projeto?.clientName || "Cliente não indicado"}</p>
+              <span className={`rounded-lg border px-2.5 py-1.5 text-sm font-bold ${tema.active}`}>
+                {alocacao.allocationPercent}%
+              </span>
             </div>
-            <span className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-sm font-bold ${tema.active}`}>
-              {alocacao.allocationPercent}%
-            </span>
           </div>
           <dl className={`mt-5 grid grid-cols-1 gap-3 border-t pt-4 text-sm sm:grid-cols-2 ${tema.border}`}>
             <div>

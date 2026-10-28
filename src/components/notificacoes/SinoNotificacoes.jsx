@@ -9,7 +9,7 @@ import Icone from "../ui/Icone";
 // `onAbrir(notificacao)` é chamado ao clicar numa notificação, depois de a marcar como lida.
 export default function SinoNotificacoes({ alinhamento = "direita", className = "", onAbrir }) {
   const tema = useTheme();
-  const { porLer, notificacoes, temMais, carregando, carregada, ligado, carregarMais, marcarLida, marcarTodas } =
+  const { porLer, notificacoes, temMais, carregando, carregada, carregarMais, marcarLida, marcarTodas } =
     useNotificacoes();
   const [aberto, setAberto] = useState(false);
   const [posicao, setPosicao] = useState(null);
@@ -80,13 +80,7 @@ export default function SinoNotificacoes({ alinhamento = "direita", className = 
           className={`fixed z-50 overflow-hidden rounded-2xl border shadow-2xl ${tema.card} ${tema.text}`}
         >
           <div className={`flex items-center justify-between gap-2 border-b px-4 py-3 ${tema.border}`}>
-            <div>
-              <p className="text-sm font-semibold">Notificações</p>
-              <p className={`flex items-center gap-1.5 text-[11px] ${tema.muted}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${ligado ? "bg-emerald-500" : "bg-slate-400"}`} aria-hidden="true" />
-                {ligado ? "Em tempo real" : "A ligar…"}
-              </p>
-            </div>
+            <p className="text-sm font-semibold">Notificações</p>
             {porLer > 0 && (
               <button type="button" onClick={marcarTodas} className={`text-xs font-semibold hover:underline ${tema.accent}`}>
                 Marcar todas como lidas
