@@ -69,7 +69,7 @@ export default function ListaProjetos({ projetos, pessoas = [], carregando, onNo
                 onClick={() => onAbrir(proj)}
                 className={`flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold shadow-md transition ${tema.primaryBtn}`}
               >
-                Abrir projeto · quadro, chat e recursos
+                Abrir projeto · quadro, chat, recursos e equipa
                 {porLer[idDe(proj)] > 0 && (
                   <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] text-white">{porLer[idDe(proj)]} por ler</span>
                 )}
