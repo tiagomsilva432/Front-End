@@ -280,9 +280,12 @@ export default function QuadroTarefas({ projectId, token, eu, gere, membros, pes
                         <span className={`mt-2.5 flex items-center justify-between gap-2 text-[11px] ${tema.muted}`}>
                           <span className="flex items-center gap-2.5">
                             {t.dueDate && (
-                              <span className={atrasada(t, hoje) ? "font-semibold text-red-500" : ""}>
-                                {atrasada(t, hoje) ? "Atrasada · " : ""}
-                                {formatarData(t.dueDate)}
+                              <span
+                                className={`flex items-center gap-1 ${atrasada(t, hoje) ? "font-semibold text-red-500" : ""}`}
+                                title={atrasada(t, hoje) ? "Prazo ultrapassado" : undefined}
+                              >
+                                <Icone nome="calendario" className="h-3.5 w-3.5" />
+                                Prazo: {formatarData(t.dueDate)}
                               </span>
                             )}
                             {t.commentCount > 0 && (
