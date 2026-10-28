@@ -196,10 +196,10 @@ export function EcraEquipa() {
 }
 
 const NOTIFICACOES = [
-  ["Passaste a gerir o projeto App de Logística", "agora"],
+  ["Passou a gerir o projeto App de Logística", "agora"],
   ["O projeto Migração para a cloud já gastou 100% do orçamento", "há 5 min"],
-  ["O teu pedido de férias de 21/12 a 31/12 foi aprovado", "há 1 h"],
-  ["Foi submetida uma avaliação que pediste", "ontem"],
+  ["O seu pedido de férias de 21/12 a 31/12 foi aprovado", "há 1 h"],
+  ["Foi submetida uma avaliação que pediu", "ontem"],
 ];
 
 export function EcraAvisos() {
