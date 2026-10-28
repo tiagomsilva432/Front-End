@@ -43,6 +43,8 @@ export default function ModalEquipaProjeto({ projeto, colaboradores, token, onFe
   const emCurso = alocacoes.filter(alocacaoEmCurso);
   const historico = alocacoes.filter((a) => !alocacaoEmCurso(a));
   const dedicacao = emCurso.reduce((total, a) => total + a.allocationPercent, 0);
+  // 270% de alocação somada são 2,7 pessoas a tempo inteiro.
+  const pessoasTempoInteiro = (dedicacao / 100).toLocaleString("pt-PT", { maximumFractionDigits: 1 });
 
   const linha = (alocacao) => (
     <div
@@ -86,8 +88,8 @@ export default function ModalEquipaProjeto({ projeto, colaboradores, token, onFe
             <p className="mt-1 text-xl font-bold">{carregando ? "…" : emCurso.length}</p>
           </div>
           <div>
-            <p className={`text-xs ${tema.muted}`}>Dedicação total</p>
-            <p className="mt-1 text-xl font-bold">{carregando ? "…" : `${dedicacao}%`}</p>
+            <p className={`text-xs ${tema.muted}`}>Equivalente a tempo inteiro</p>
+            <p className="mt-1 text-xl font-bold">{carregando ? "…" : `${pessoasTempoInteiro} ${pessoasTempoInteiro === "1" ? "pessoa" : "pessoas"}`}</p>
           </div>
         </div>
 
