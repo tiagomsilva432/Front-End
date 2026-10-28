@@ -16,6 +16,11 @@ export const listarAlocacoesProjeto = async (projectId, token, apenasAbertas = f
   return dadosResposta(resultado);
 };
 
+export const obterProjeto = async (projectId, token) => {
+  const resultado = await apiRequest(`/projects/${projectId}`, { token });
+  return dadosResposta(resultado);
+};
+
 export const listarProjetos = async (companyId, status = "", token) => {
   const parametros = new URLSearchParams();
   if (companyId) parametros.set("companyId", companyId);

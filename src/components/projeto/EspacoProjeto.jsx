@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listarAlocacoesProjeto } from "../../services/projetoservice";
+import { listarAlocacoesProjeto, obterProjeto } from "../../services/projetoservice";
 import { listarUsers } from "../../services/userservice";
 import { useNotificacoes } from "../../notificacoes/notificacoes";
 import { useTheme } from "../../theme/tema";
@@ -7,6 +7,7 @@ import { ESTADOS_PROJETO, alocacaoEmCurso, idDe } from "../../utils/formatar";
 import Icone from "../ui/Icone";
 import BotaoVoltar from "../ui/BotaoVoltar";
 import ChatProjeto from "./ChatProjeto";
+import EquipaProjeto from "./EquipaProjeto";
 import QuadroTarefas from "./QuadroTarefas";
 import RecursosProjeto from "./RecursosProjeto";
 
@@ -14,25 +15,46 @@ const SEPARADORES = [
   ["quadro", "Quadro", "quadro"],
   ["chat", "Chat", "chat"],
   ["recursos", "Recursos", "clipe"],
+  ["equipa", "Equipa", "pessoas"],
 ];
 
-// O espaço de um projeto para os seus membros: quadro de tarefas, chat e recursos.
+// O espaço de um projeto para os seus membros: quadro de tarefas, chat, recursos e equipa.
 // Membros: quem tem uma alocação que ainda não acabou, o gestor e os admins (o back recusa os outros com 403).
 // `separadorInicial`/`tarefaInicial` vêm de uma notificação (ex.: tarefa atribuída) e abrem já o sítio certo.
-export default function EspacoProjeto({ projeto, token, eu, pessoas: pessoasDadas, separadorInicial = "quadro", tarefaInicial, onVoltar }) {
+export default function EspacoProjeto({ projeto: projetoDado, token, eu, pessoas: pessoasDadas, separadorInicial = "quadro", tarefaInicial, onVoltar }) {
   const tema = useTheme();
   const { chatPorLer } = useNotificacoes();
   const [separador, setSeparador] = useState(separadorInicial);
-  const [pessoasCarregadas, setPessoasCarregadas] = useState([]);
-  const [alocados, setAlocados] = useState([]);
+  const [projetoCompleto, setProjetoCompleto] = useState(null);
+  const [pessoasCarregadas, setPessoasCarregadas] = useState(null);
+  const [alocacoes, setAlocacoes] = useState(null);
+  const [erroEquipa, setErroEquipa] = useState(false);
+
+  // Aberto por uma notificação antes de a lista de projetos carregar, só traz id e nome (sem managerId).
+  useEffect(() => {
+    if (projetoDado.managerId !== undefined) return;
+    let ativo = true;
+    obterProjeto(projetoDado.id, token)
+      .then((p) => ativo && p && setProjetoCompleto(p))
+      .catch((err) => {
+        console.error("Erro ao carregar o projeto:", err);
+        if (ativo) setErroEquipa(true);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [projetoDado, token]);
 
   // Nomes e fotos (o back só manda ids). Um colaborador não recebe a lista de fora; carrega-a.
   useEffect(() => {
     if (pessoasDadas) return;
     let ativo = true;
     listarUsers({}, token)
-      .then((lista) => ativo && Array.isArray(lista) && setPessoasCarregadas(lista))
-      .catch((err) => console.error("Erro ao carregar a equipa:", err));
+      .then((lista) => ativo && setPessoasCarregadas(Array.isArray(lista) ? lista : []))
+      .catch((err) => {
+        console.error("Erro ao carregar a equipa:", err);
+        if (ativo) setErroEquipa(true);
+      });
     return () => {
       ativo = false;
     };
@@ -41,21 +63,30 @@ export default function EspacoProjeto({ projeto, token, eu, pessoas: pessoasDada
   // Quem está alocado agora: é quem pode ser responsável por uma tarefa (com o gestor e os admins).
   useEffect(() => {
     let ativo = true;
-    listarAlocacoesProjeto(projeto.id, token)
-      .then((lista) => ativo && setAlocados((lista || []).filter(alocacaoEmCurso).map((a) => a.userId)))
-      .catch((err) => console.error("Erro ao carregar a equipa do projeto:", err));
+    listarAlocacoesProjeto(projetoDado.id, token)
+      .then((lista) => ativo && setAlocacoes((lista || []).filter(alocacaoEmCurso)))
+      .catch((err) => {
+        console.error("Erro ao carregar a equipa do projeto:", err);
+        if (ativo) setErroEquipa(true);
+      });
     return () => {
       ativo = false;
     };
-  }, [projeto.id, token]);
+  }, [projetoDado.id, token]);
 
-  const pessoas = pessoasDadas || pessoasCarregadas;
+  const projeto = projetoCompleto || projetoDado;
+  const pessoas = pessoasDadas || pessoasCarregadas || [];
+  const alocados = (alocacoes || []).map((a) => a.userId);
   const souAdmin = eu?.role === "company_admin" || eu?.role === "system_admin";
   const souGestor = projeto.managerId && projeto.managerId === eu?.id;
   const gere = souAdmin || souGestor;
   const membros = pessoas.filter(
     (p) => p.status === "active" && (alocados.includes(idDe(p)) || idDe(p) === projeto.managerId || p.role === "company_admin"),
   );
+  const equipa = membros.filter((p) => alocados.includes(idDe(p)) || idDe(p) === projeto.managerId);
+  const adminsComAcesso = membros.filter((p) => !equipa.includes(p));
+  const carregandoEquipa =
+    !erroEquipa && (alocacoes === null || !(pessoasDadas || pessoasCarregadas) || projeto.managerId === undefined);
   const porLerChat = chatPorLer.porProjeto[projeto.id] || 0;
 
   return (
@@ -68,14 +99,14 @@ export default function EspacoProjeto({ projeto, token, eu, pessoas: pessoasDada
             {[
               projeto.clientName,
               ESTADOS_PROJETO[projeto.status],
-              `${membros.length} ${membros.length === 1 ? "membro" : "membros"}`,
+              `${equipa.length} ${equipa.length === 1 ? "membro" : "membros"}`,
               souGestor ? "É o gestor deste projeto" : souAdmin ? "Vista de administrador" : null,
             ]
               .filter(Boolean)
               .join(" · ")}
           </p>
         </div>
-        <div role="tablist" aria-label="Secções do projeto" className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
+        <div role="tablist" aria-label="Secções do projeto" className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {SEPARADORES.map(([id, rotulo, icone]) => (
             <button
               key={id}
@@ -103,6 +134,17 @@ export default function EspacoProjeto({ projeto, token, eu, pessoas: pessoasDada
       )}
       {separador === "chat" && <ChatProjeto projectId={projeto.id} token={token} eu={eu} gere={gere} pessoas={pessoas} />}
       {separador === "recursos" && <RecursosProjeto projectId={projeto.id} token={token} eu={eu} gere={gere} />}
+      {separador === "equipa" && (
+        <EquipaProjeto
+          projeto={projeto}
+          eu={eu}
+          equipa={equipa}
+          admins={adminsComAcesso}
+          alocacoes={alocacoes || []}
+          carregando={carregandoEquipa}
+          erro={erroEquipa}
+        />
+      )}
     </div>
   );
 }
