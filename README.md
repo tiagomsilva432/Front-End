@@ -1,6 +1,10 @@
 # Front-End
 
-English · [Português](README.pt-PT.md)
+English · [Português](README-PT.md)
+
+> This is one half of a pair: this web app and the API in
+> [Back-End](https://github.com/tiagomsilva432/Back-End) are designed to work
+> together. Clone both side by side.
 
 The web app of the ERP: one panel per role (system admin, company admin,
 employee) over the API in the

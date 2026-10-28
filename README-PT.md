@@ -2,6 +2,10 @@
 
 [English](README.md) · Português
 
+> Este é um de dois repositórios: esta aplicação web e a API do
+> [Back-End](https://github.com/tiagomsilva432/Back-End) foram feitas para
+> trabalhar juntas. Clona os dois lado a lado.
+
 A aplicação web do ERP: um painel por role (administrador do sistema,
 administrador da empresa, colaborador) sobre a API do repositório
 [Back-End](https://github.com/tiagomsilva432/Back-End). Pessoas, projetos com
