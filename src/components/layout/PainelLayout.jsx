@@ -99,7 +99,7 @@ export default function PainelLayout({
               className={`mt-2 flex w-full items-center gap-3 rounded-xl border border-transparent px-3.5 py-3 text-left text-sm font-medium ${tema.muted} ${tema.hover}`}
             >
               <Icone nome="chave" className="h-5 w-5" />
-              Alterar senha
+              Alterar palavra-passe
             </button>
             <button
               type="button"
@@ -143,7 +143,7 @@ export default function PainelLayout({
             className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-colors ${tema.secondaryBtn}`}
           >
             <Icone nome="chave" className="h-4 w-4" />
-            Alterar senha
+            Alterar palavra-passe
           </button>
           <div className="flex gap-2">
             <BotaoTema className="flex-1" />

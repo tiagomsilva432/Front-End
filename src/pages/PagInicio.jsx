@@ -49,7 +49,7 @@ const PERFIS = [
 
 const PASSOS = [
   ["1", "Criamos a sua empresa", "Configuramos a conta da empresa e o primeiro administrador."],
-  ["2", "Convide a equipa", "Cada pessoa recebe um e-mail para ativar a conta e definir a senha."],
+  ["2", "Convide a equipa", "Cada pessoa recebe um e-mail para ativar a conta e definir a palavra-passe."],
   ["3", "Comece a usar", "Projetos, alocações, ausências e despesas ficam num só sítio, a partir do primeiro dia."],
 ];
 

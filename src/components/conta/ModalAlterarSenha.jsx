@@ -25,11 +25,11 @@ export default function ModalAlterarSenha({ onFechar }) {
       return;
     }
     if (nova !== confirmar) {
-      setErro("As senhas novas não coincidem.");
+      setErro("As palavras-passe novas não coincidem.");
       return;
     }
     if (nova === atual) {
-      setErro("A senha nova tem de ser diferente da atual.");
+      setErro("A palavra-passe nova tem de ser diferente da atual.");
       return;
     }
 
@@ -44,8 +44,8 @@ export default function ModalAlterarSenha({ onFechar }) {
       // O Back-End responde 401 quando a senha atual está errada.
       setErro(
         err.status === 401
-          ? "A senha atual está incorreta."
-          : err.message || "Não foi possível alterar a senha.",
+          ? "A palavra-passe atual está incorreta."
+          : err.message || "Não foi possível alterar a palavra-passe.",
       );
     } finally {
       setAGuardar(false);
@@ -55,8 +55,8 @@ export default function ModalAlterarSenha({ onFechar }) {
   return (
     <Modal
       id="alterar-senha"
-      titulo="Alterar senha"
-      subtitulo="Por segurança, confirme primeiro a senha atual."
+      titulo="Alterar palavra-passe"
+      subtitulo="Por segurança, confirme primeiro a palavra-passe atual."
       onFechar={onFechar}
       bloqueado={aGuardar}
       largura="max-w-md"
@@ -64,7 +64,7 @@ export default function ModalAlterarSenha({ onFechar }) {
       {concluido ? (
         <div className="space-y-4">
           <Alerta tipo="sucesso">
-            Senha alterada com sucesso. Use a nova senha no próximo login.
+            Palavra-passe alterada com sucesso. Use a nova palavra-passe no próximo login.
           </Alerta>
           <button
             type="button"
@@ -79,7 +79,7 @@ export default function ModalAlterarSenha({ onFechar }) {
           {erro && <Alerta>{erro}</Alerta>}
           <CampoSenha
             id="senha-atual"
-            label="Senha atual"
+            label="Palavra-passe atual"
             autoComplete="current-password"
             required
             value={atual}
@@ -88,7 +88,7 @@ export default function ModalAlterarSenha({ onFechar }) {
           />
           <CampoSenha
             id="senha-nova"
-            label="Nova senha"
+            label="Nova palavra-passe"
             ajuda={REGRAS_SENHA}
             autoComplete="new-password"
             required
@@ -98,7 +98,7 @@ export default function ModalAlterarSenha({ onFechar }) {
           />
           <CampoSenha
             id="senha-confirmar"
-            label="Confirmar nova senha"
+            label="Confirmar nova palavra-passe"
             autoComplete="new-password"
             required
             value={confirmar}
@@ -119,7 +119,7 @@ export default function ModalAlterarSenha({ onFechar }) {
               disabled={aGuardar}
               className={`rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-60 ${tema.primaryBtn}`}
             >
-              {aGuardar ? "A guardar..." : "Alterar senha"}
+              {aGuardar ? "A guardar..." : "Alterar palavra-passe"}
             </button>
           </div>
         </form>

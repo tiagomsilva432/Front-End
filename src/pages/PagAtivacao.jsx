@@ -33,7 +33,7 @@ export default function PagAtivacao({ onConcluido }) {
     }
 
     if (senha !== confirmarSenha) {
-      setErro("As senhas não coincidem!");
+      setErro("As palavras-passe não coincidem!");
       return;
     }
 
@@ -54,12 +54,12 @@ export default function PagAtivacao({ onConcluido }) {
   };
 
   return (
-    <EcraAutenticacao titulo="Ativar conta" subtitulo="Defina a sua senha para concluir o acesso ao sistema.">
+    <EcraAutenticacao titulo="Ativar conta" subtitulo="Defina a sua palavra-passe para concluir o acesso ao sistema.">
       {erro && <Alerta className="mb-5">{erro}</Alerta>}
 
       {sucesso ? (
         <div className="space-y-4 text-center">
-          <Alerta tipo="sucesso">Conta ativada com sucesso! A sua senha foi definida.</Alerta>
+          <Alerta tipo="sucesso">Conta ativada com sucesso! A sua palavra-passe foi definida.</Alerta>
           <button
             type="button"
             onClick={irParaLogin}
@@ -72,22 +72,22 @@ export default function PagAtivacao({ onConcluido }) {
         <form onSubmit={handleAtivacao} className="space-y-4">
           <CampoSenha
             id="ativacao-senha"
-            label="Nova senha"
+            label="Nova palavra-passe"
             ajuda={REGRAS_SENHA}
             disabled={carregando}
             minLength={8}
             autoComplete="new-password"
-            placeholder="Crie uma senha segura"
+            placeholder="Crie uma palavra-passe segura"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />
           <CampoSenha
             id="ativacao-confirmar"
-            label="Confirmar nova senha"
+            label="Confirmar nova palavra-passe"
             disabled={carregando}
             minLength={8}
             autoComplete="new-password"
-            placeholder="Repita a senha"
+            placeholder="Repita a palavra-passe"
             value={confirmarSenha}
             onChange={(e) => setConfirmarSenha(e.target.value)}
           />

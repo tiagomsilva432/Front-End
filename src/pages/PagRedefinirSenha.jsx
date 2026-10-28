@@ -43,7 +43,7 @@ export default function PagRedefinirSenha() {
       return;
     }
     if (senha !== confirmarSenha) {
-      setErro("As senhas não coincidem!");
+      setErro("As palavras-passe não coincidem!");
       return;
     }
 
@@ -67,7 +67,7 @@ export default function PagRedefinirSenha() {
 
   if (!token) {
     return (
-      <EcraAutenticacao titulo="Recuperar senha" subtitulo="Indique o seu e-mail e enviamos um link para definir uma nova senha.">
+      <EcraAutenticacao titulo="Recuperar palavra-passe" subtitulo="Indique o seu e-mail e enviamos um link para definir uma nova palavra-passe.">
         {erro && <Alerta className="mb-5">{erro}</Alerta>}
         {concluido ? (
           <Alerta tipo="sucesso">
@@ -97,11 +97,11 @@ export default function PagRedefinirSenha() {
   }
 
   return (
-    <EcraAutenticacao titulo="Definir nova senha" subtitulo="Escolha a nova senha da sua conta.">
+    <EcraAutenticacao titulo="Definir nova palavra-passe" subtitulo="Escolha a nova palavra-passe da sua conta.">
       {erro && <Alerta className="mb-5">{erro}</Alerta>}
       {concluido ? (
         <div className="space-y-4">
-          <Alerta tipo="sucesso">Senha alterada com sucesso! Já pode entrar com a nova senha.</Alerta>
+          <Alerta tipo="sucesso">Palavra-passe alterada com sucesso! Já pode entrar com a nova palavra-passe.</Alerta>
           <a href="/entrar" className={`block text-center ${botaoPrincipal}`}>
             Ir para o login
           </a>
@@ -110,7 +110,7 @@ export default function PagRedefinirSenha() {
         <form onSubmit={definirSenha} className="space-y-4">
           <CampoSenha
             id="nova-senha"
-            label="Nova senha"
+            label="Nova palavra-passe"
             ajuda={REGRAS_SENHA}
             autoComplete="new-password"
             value={senha}
@@ -119,14 +119,14 @@ export default function PagRedefinirSenha() {
           />
           <CampoSenha
             id="confirmar-nova-senha"
-            label="Confirmar nova senha"
+            label="Confirmar nova palavra-passe"
             autoComplete="new-password"
             value={confirmarSenha}
             onChange={(e) => setConfirmarSenha(e.target.value)}
             disabled={carregando}
           />
           <button type="submit" disabled={carregando} className={botaoPrincipal}>
-            {carregando ? "A guardar..." : "Guardar nova senha"}
+            {carregando ? "A guardar..." : "Guardar nova palavra-passe"}
           </button>
         </form>
       )}

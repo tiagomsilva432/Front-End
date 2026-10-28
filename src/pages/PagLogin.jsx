@@ -19,7 +19,7 @@ function PagLogin({ onLogin }) {
     setErro("");
 
     if (!email || !senha) {
-      setErro("Por favor, preencha o e-mail e a senha.");
+      setErro("Por favor, preencha o e-mail e a palavra-passe.");
       return;
     }
 
@@ -82,11 +82,11 @@ function PagLogin({ onLogin }) {
         />
         <Campo
           id="login-senha"
-          label="Senha"
+          label="Palavra-passe"
           obrigatorio
           type="password"
           autoComplete="current-password"
-          placeholder="Digite a sua senha"
+          placeholder="Introduza a sua palavra-passe"
           value={senha}
           onChange={(e) => {
             setSenha(e.target.value);
@@ -149,7 +149,7 @@ function PagLogin({ onLogin }) {
         href="/redefinir-senha"
         className={`mt-4 block text-center text-xs font-semibold hover:underline ${tema.accent}`}
       >
-        Esqueci-me da senha
+        Esqueci-me da palavra-passe
       </a>
 
       <p className={`mt-6 text-center text-xs ${tema.muted}`}>

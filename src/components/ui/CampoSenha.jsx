@@ -21,7 +21,7 @@ export default function CampoSenha({ id, label, ajuda, ...props }) {
         <button
           type="button"
           onClick={() => setVisivel((atual) => !atual)}
-          aria-label={visivel ? "Ocultar senha" : "Mostrar senha"}
+          aria-label={visivel ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
           aria-pressed={visivel}
           className={`absolute inset-y-0 right-1 flex w-10 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 ${tema.muted} ${tema.hover}`}
         >
