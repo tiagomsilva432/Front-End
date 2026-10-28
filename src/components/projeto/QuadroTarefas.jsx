@@ -207,7 +207,14 @@ export default function QuadroTarefas({ projectId, token, eu, gere, membros, pes
                 e.preventDefault();
                 if (arrastada && alvo?.status === status) {
                   const semEla = lista.filter((t) => t.id !== arrastada.id);
-                  const posicao = Math.min(alvo.posicao, semEla.length);
+                  // O alvo conta com o cartão arrastado; o servidor conta sem ele. Abaixo do sítio dele, é menos um.
+                  const atual = lista.findIndex((t) => t.id === arrastada.id);
+                  const posicao = Math.min(atual !== -1 && alvo.posicao > atual ? alvo.posicao - 1 : alvo.posicao, semEla.length);
+                  if (atual === posicao) {
+                    setArrastada(null);
+                    setAlvo(null);
+                    return;
+                  }
                   mover(arrastada, status, posicao);
                 }
                 setArrastada(null);
